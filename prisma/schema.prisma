@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AttemptMode {
+  PRACTICE
+  EXAM
+}
+
+enum AttemptSource {
+  NEW
+  WRONG
+  DUE
+  RANDOM
+  BOOKMARKED
+  CUSTOM
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  EXPIRED
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String?
+  name      String?
+  createdAt DateTime @default(now())
+
+  attempts  Attempt[]
+  progress  QuestionProgress[]
+  bookmarks Bookmark[]
+  reports   QuestionReport[]
+}
+
+model Subject {
+  id        String @id @default(cuid())
+  name      String @unique
+  slug      String @unique
+  sortOrder Int    @default(0)
+
+  questions Question[]
+  attempts  Attempt[]
+}
+
+model Question {
+  id          String   @id @default(cuid())
+  // Official question number in the bank.
+  code        String   @unique
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id])
+  text        String
+  imageUrl    String?
+  explanation String?
+  // When true, options keep their sortOrder (e.g. "А ба В зөв" references other options).
+  lockOptions Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  options      Option[]
+  attemptItems AttemptItem[]
+  progress     QuestionProgress[]
+  bookmarks    Bookmark[]
+  reports      QuestionReport[]
+
+  @@index([subjectId, isActive])
+}
+
+model Option {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String
+  isCorrect  Boolean  @default(false)
+  // Pinned options keep their position when the rest are shuffled (e.g. "Бүгд зөв").
+  pinned     Boolean  @default(false)
+  sortOrder  Int
+
+  @@unique([questionId, sortOrder])
+}
+
+model ExamPreset {
+  id            String  @id @default(cuid())
+  name          String
+  questionCount Int
+  timeLimitMin  Int
+  // Shape: { [subjectId]: count }
+  distribution  Json?
+  isActive      Boolean @default(true)
+  sortOrder     Int     @default(0)
+
+  attempts Attempt[]
+}
+
+model Attempt {
+  id           String         @id @default(cuid())
+  userId       String
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mode         AttemptMode
+  source       AttemptSource?
+  status       AttemptStatus  @default(IN_PROGRESS)
+  subjectId    String?
+  subject      Subject?       @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  presetId     String?
+  preset       ExamPreset?    @relation(fields: [presetId], references: [id], onDelete: SetNull)
+  timeLimitSec Int?
+  totalCount   Int
+  correctCount Int?
+  startedAt    DateTime       @default(now())
+  submittedAt  DateTime?
+
+  items AttemptItem[]
+
+  @@index([userId, status])
+}
+
+model AttemptItem {
+  id               String    @id @default(cuid())
+  attemptId        String
+  attempt          Attempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId       String
+  question         Question  @relation(fields: [questionId], references: [id])
+  position         Int
+  // Option ids in the order shown to the user.
+  optionOrder      String[]
+  selectedOptionId String?
+  isCorrect        Boolean?
+  flagged          Boolean   @default(false)
+  answeredAt       DateTime?
+
+  @@unique([attemptId, position])
+  @@unique([attemptId, questionId])
+  @@index([questionId])
+}
+
+model QuestionProgress {
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId     String
+  question       Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  box            Int       @default(0)
+  correctCount   Int       @default(0)
+  wrongCount     Int       @default(0)
+  lastAnsweredAt DateTime?
+  nextReviewAt   DateTime?
+
+  @@id([userId, questionId])
+  @@index([userId, nextReviewAt])
+}
+
+model Bookmark {
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([userId, questionId])
+}
+
+model QuestionReport {
+  id         String       @id @default(cuid())
+  questionId String
+  question   Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message    String
+  status     ReportStatus @default(OPEN)
+  createdAt  DateTime     @default(now())
+
+  @@index([status])
+}
