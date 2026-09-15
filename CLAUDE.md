@@ -15,6 +15,15 @@ Next.js 16 App Router (TypeScript strict), Prisma ORM 7 + PostgreSQL (driver ada
 - App code imports Prisma only from src/lib/db.ts. Standalone scripts use createPrismaClient() from src/lib/prisma.ts.
 - Per-user pages are dynamic; never cache per-user data.
 - Real question bank files in data/ are never committed (only data/template.xlsx).
+- Stay on Prisma ORM 7.10.x: prisma, @prisma/client and @prisma/adapter-pg are pinned to exact 7.10.x versions. Ignore Prisma's "Update available ... 8.x" notice (npm's "latest" tag currently points to the v8 release candidate).
+- Never upgrade any dependency to a new major version without asking the user first.
+
+## Auth (Clerk)
+- src/proxy.ts only runs clerkMiddleware() with no auth or role checks (createRouteMatcher is deprecated). Protection lives in each resource: pages, layouts, route handlers and server actions call requireUser() / requireAdmin() from src/lib/auth.ts (requireUser() calls auth.protect()). Check in pages as well as layouts, since layouts don't re-run on client navigation.
+- Every new page, layout, route handler and server action must pass the ESLint rule @clerk/next/require-auth-protection (@clerk/eslint-plugin, pinned exactly because the rule is experimental). Never silence it with eslint-disable comments.
+- Signed-in/out UI uses <Show when="signed-in|signed-out"> from @clerk/nextjs (SignedIn/SignedOut/Protect are removed in v7).
+- Admin role = Clerk user publicMetadata { "role": "admin" }. The session token must be customized in the Clerk Dashboard (Sessions) with { "metadata": "{{user.public_metadata}}" }, otherwise sessionClaims.metadata is missing and nobody is admin.
+- Never print the values of Clerk keys from .env.
 
 ## Commands
 pnpm dev | build | lint | typecheck | test | db:up | db:migrate | db:generate | db:seed | db:studio | db:reset | import:questions
