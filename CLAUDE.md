@@ -29,6 +29,12 @@ Next.js 16 App Router (TypeScript strict), Prisma ORM 7 + PostgreSQL (driver ada
 pnpm dev | build | lint | typecheck | test | db:up | db:migrate | db:generate | db:seed | db:studio | db:reset | import:questions
 (Add each script when the step that needs it is implemented.)
 
+## Question bank data
+- Source files live in data/source/ and are never committed (only data/template.xlsx is; regenerate it with `pnpm template:make`).
+- In the printed book the correct answer is ALWAYS the last option. A future book -> template converter must therefore set `correct` to the last option's letter, and flag every question whose option count is not 4 for manual review (the assumption is only verified for 4-option questions).
+- Import pipeline: src/lib/import (read -> parse -> validate -> commit), independent of Next.js so the admin panel can reuse it. CLI: `pnpm import:questions <file> [--dry-run]`.
+- commit() updates existing options IN PLACE by sortOrder so Option ids stay stable for AttemptItem.optionOrder; it never deletes options of a question that already has attempts.
+
 ## Database
 - Node 24 (.nvmrc). Local PostgreSQL 17 runs in Docker (compose project "phd-prep"): `pnpm db:up`. It listens on host port 5433, not 5432 (5432 is used by another local project).
 - Prisma 7 `migrate dev` does NOT run `prisma generate` or the seed. After editing prisma/schema.prisma run `pnpm db:migrate`, then `pnpm db:generate`, then `pnpm db:seed` if needed.
