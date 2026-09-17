@@ -9,7 +9,7 @@ Next.js 16 App Router (TypeScript strict), Prisma ORM 7 + PostgreSQL (driver ada
 - All user-facing text is Mongolian (Cyrillic). Code, identifiers and comments are English.
 - Option shuffling happens ONLY on the server when an attempt is created, and the order is persisted in AttemptItem.optionOrder. Never call Math.random in components or during render.
 - Never send Option.isCorrect or the correct option id to the browser before the user has answered that item (practice) or submitted the attempt (exam).
-- Display letters (А Б В Г Д Е) are derived from the display position and never stored.
+- Display letters are a b c d e f (Latin, as in the printed book), derived from the display position and never stored.
 - Every server action and route handler must: authenticate (requireUser / requireAdmin), check ownership, validate input with Zod. Never rely on proxy.ts alone.
 - Mutations use Server Actions in src/server/actions. Reads live in src/server/queries and are called from Server Components.
 - App code imports Prisma only from src/lib/db.ts. Standalone scripts use createPrismaClient() from src/lib/prisma.ts.
@@ -17,6 +17,15 @@ Next.js 16 App Router (TypeScript strict), Prisma ORM 7 + PostgreSQL (driver ada
 - Real question bank files in data/ are never committed (only data/template.xlsx).
 - Stay on Prisma ORM 7.10.x: prisma, @prisma/client and @prisma/adapter-pg are pinned to exact 7.10.x versions. Ignore Prisma's "Update available ... 8.x" notice (npm's "latest" tag currently points to the v8 release candidate).
 - Never upgrade any dependency to a new major version without asking the user first.
+- Never run git commit, git push or any command that rewrites git history. The user reviews and commits every step; git status and git diff are fine.
+
+## UI
+- Question and explanation text is set in Literata (`font-serif`); the interface is Inter (`font-sans`). Both load cyrillic-ext, which Ө ө Ү ү need.
+- The answer list is an ARIA **listbox** (`role="listbox"` / `role="option"`, roving tabindex), not a radio group: arrow keys move focus ONLY. Choosing is deliberate — click/tap, Enter/Space, or the digit 1-6 of the display position. In practice mode choosing submits the answer, so selection must never follow focus.
+- Shortcuts read `event.code` (`Digit1`..`Digit6`, `KeyF`), not `event.key`: a Mongolian layout puts Cyrillic characters on those keys.
+- Wording: "Эргэж харах" (flag icon, shortcut F) is the exam flag on AttemptItem.flagged. "Тэмдэглэх" / "Тэмдэглэсэн" (bookmark icon) is the Bookmark model, used in practice and on /review. They are never mixed.
+- Correct/wrong/flagged use the `success`, `destructive` and `warning` tokens, and are always spelled out in text as well as colour.
+- /dev/ui is a developer-only showcase of the quiz UI built from fixtures (src/app/dev/ui). It has no auth and no database, and `notFound()`s in production.
 
 ## Auth (Clerk)
 - src/proxy.ts only runs clerkMiddleware() with no auth or role checks (createRouteMatcher is deprecated). Protection lives in each resource: pages, layouts, route handlers and server actions call requireUser() / requireAdmin() from src/lib/auth.ts (requireUser() calls auth.protect()). Check in pages as well as layouts, since layouts don't re-run on client navigation.

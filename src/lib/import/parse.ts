@@ -65,7 +65,8 @@ function parseLock(raw: string): boolean {
   return token === "1" || token === "true" || token === "тийм";
 }
 
-// Label alphabets a row may be numbered with. Display letters are А Б В Г Д Е.
+// Label alphabets a row may be numbered with in the source file (the book prints both
+// Latin and Cyrillic labels). Display letters in the app are Latin a b c d e f.
 const LABEL_ALPHABETS = [
   ["a", "b", "c", "d", "e", "f"],
   ["A", "B", "C", "D", "E", "F"],

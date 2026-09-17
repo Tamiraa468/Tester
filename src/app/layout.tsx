@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Literata } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { mnMN } from "@clerk/localizations/mn-MN";
 import { Toaster } from "@/components/ui/sonner";
@@ -12,6 +12,12 @@ const inter = Inter({
   subsets: ["latin", "cyrillic", "cyrillic-ext"],
 });
 
+// Question text is set in a serif, the way it reads in the printed book.
+const literata = Literata({
+  variable: "--font-literata",
+  subsets: ["latin", "cyrillic", "cyrillic-ext"],
+});
+
 export const metadata: Metadata = {
   title: "Докторантурын элсэлтийн шалгалтын бэлтгэл",
   description:
@@ -20,7 +26,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="mn" className={`${inter.variable} h-full antialiased`}>
+    <html
+      lang="mn"
+      className={`${inter.variable} ${literata.variable} h-full antialiased`}
+    >
       <body className="min-h-full flex flex-col">
         <ClerkProvider localization={mnMN}>
           <TooltipProvider>{children}</TooltipProvider>
