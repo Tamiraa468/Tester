@@ -1,4 +1,7 @@
 import type { AnswerOption } from "@/components/quiz/option-list";
+import type { ActivityRow } from "@/lib/activity";
+import type { SubjectStats } from "@/server/queries/progress";
+import { dayKeysBack } from "@/lib/date";
 
 export type DemoQuestion = {
   id: string;
@@ -112,4 +115,53 @@ export const EXAM_QUESTIONS: DemoQuestion[] = [
   DEMO_QUESTIONS.consent,
   DEMO_QUESTIONS.qualitative,
   DEMO_QUESTIONS.citation,
+];
+
+/**
+ * A fixed 30-day window for the dashboard chart. Deterministic (no Math.random and no
+ * clock), so the showcase looks the same on every render.
+ */
+const DEMO_TOTALS = [
+  0, 12, 8, 0, 0, 20, 14, 6, 0, 3, 18, 22, 9, 0, 0, 11, 16, 4, 7, 0, 25, 13, 0, 5, 19,
+  10, 0, 15, 21, 6,
+];
+
+export const DEMO_ACTIVITY: ActivityRow[] = dayKeysBack("2026-09-17", 30).map((day, index) => ({
+  day,
+  total: DEMO_TOTALS[index],
+  correct: Math.round(DEMO_TOTALS[index] * 0.7),
+}));
+
+/** Three subjects, weakest first, as getSubjectStats() orders them. */
+export const DEMO_SUBJECTS: SubjectStats[] = [
+  {
+    subjectId: "s-methods",
+    subjectName: "Судалгааны арга зүй",
+    total: 120,
+    seen: 24,
+    mastered: 6,
+    answered: 31,
+    correct: 17,
+    accuracy: 17 / 31,
+  },
+  {
+    subjectId: "s-stats",
+    subjectName: "Статистик",
+    total: 90,
+    seen: 61,
+    mastered: 28,
+    answered: 104,
+    correct: 79,
+    accuracy: 79 / 104,
+  },
+  {
+    subjectId: "s-philosophy",
+    subjectName: "Философи",
+    total: 45,
+    seen: 0,
+    mastered: 0,
+    answered: 0,
+    correct: 0,
+    accuracy: null,
+  },
 ];

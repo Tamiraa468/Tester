@@ -2,9 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { toggleBookmark } from "@/server/actions/practice";
+import { setBookmark } from "@/server/actions/practice";
 
-/** Optimistic bookmark toggle; rolls back and explains when the server refuses. */
+/**
+ * Optimistic bookmark toggle; rolls back and explains when the server refuses. The
+ * action is told the state to store, not to flip, so a quick double click settles on
+ * what the user last asked for instead of racing itself.
+ */
 export function useBookmark(questionId: string, initial: boolean) {
   const [bookmarked, setBookmarked] = useState(initial);
   const [pending, startTransition] = useTransition();
@@ -12,9 +16,10 @@ export function useBookmark(questionId: string, initial: boolean) {
   const toggle = () => {
     if (pending) return;
     const previous = bookmarked;
-    setBookmarked(!previous);
+    const next = !previous;
+    setBookmarked(next);
     startTransition(async () => {
-      const result = await toggleBookmark(questionId);
+      const result = await setBookmark({ questionId, bookmarked: next });
       if ("error" in result) {
         setBookmarked(previous);
         toast.error(result.error);

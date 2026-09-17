@@ -125,6 +125,9 @@ model Attempt {
   items AttemptItem[]
 
   @@index([userId, status])
+  // The dashboard's recent attempts: this user's attempts, newest first. The index
+  // above cannot order, so without this every attempt of the user has to be sorted.
+  @@index([userId, startedAt])
 }
 
 model AttemptItem {
@@ -169,6 +172,9 @@ model Bookmark {
   createdAt  DateTime @default(now())
 
   @@id([userId, questionId])
+  // The "Тэмдэглэсэн" review tab pages by newest bookmark; the primary key is
+  // (userId, questionId), so ordering by createdAt would sort the user's whole list.
+  @@index([userId, createdAt])
 }
 
 model QuestionReport {

@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
-import { ClockIcon } from "lucide-react";
-import { cn } from "cn";
-import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { AttemptHistory } from "@/components/exam/attempt-history";
+import { OpenExamBanner } from "@/components/exam/open-exam-banner";
 import { PresetCard } from "@/components/exam/preset-card";
+import { AttemptMode } from "@/generated/prisma/enums";
 import { requireUser } from "@/lib/auth";
-import { formatDateTime } from "@/lib/format";
 import { finalizeMyExpiredExam } from "@/server/actions/exam";
 import { getOpenExam, listExamHistory, listPresetCards } from "@/server/queries/exams";
 
@@ -35,30 +31,7 @@ export default async function ExamPage() {
         </p>
       </div>
 
-      {open && (
-        <Card className="ring-warning/50">
-          <CardContent className="flex flex-wrap items-center gap-3">
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <p className="font-semibold">Үргэлжилж буй шалгалт</p>
-              <p className="text-sm text-muted-foreground tabular-nums">
-                {open.presetName ?? "Шалгалт"} · Хариулсан {open.answeredCount} / {open.totalCount}
-              </p>
-              {open.deadline && (
-                <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <ClockIcon className="size-3.5" aria-hidden="true" />
-                  {formatDateTime(open.deadline)} хүртэл
-                </p>
-              )}
-            </div>
-            <Link
-              href={`/exam/${open.id}`}
-              className={cn(buttonVariants(), "h-11 w-full sm:h-9 sm:w-auto")}
-            >
-              Үргэлжлүүлэх
-            </Link>
-          </CardContent>
-        </Card>
-      )}
+      {open && <OpenExamBanner exam={open} />}
 
       <section aria-labelledby="presets-heading" className="flex flex-col gap-3">
         <h2 id="presets-heading" className="text-lg font-semibold">
@@ -84,7 +57,9 @@ export default async function ExamPage() {
           rows={history.map((exam) => ({
             id: exam.id,
             href: `/exam/${exam.id}/result`,
-            title: exam.presetName ?? "Шалгалт",
+            mode: AttemptMode.EXAM,
+            source: null,
+            presetName: exam.presetName,
             status: exam.status,
             startedAt: exam.startedAt,
             correctCount: exam.correctCount,

@@ -12,6 +12,20 @@ import { MASTERED_BOX } from "@/lib/quiz/leitner";
 export const PRACTICE_COUNTS = [10, 20, 50] as const;
 export type PracticeCount = (typeof PRACTICE_COUNTS)[number];
 
+/**
+ * How many questions a one-tap start (the dashboard's "Өнөөдөр давтах" and the /review
+ * tabs) asks for: the smallest offered size that covers what is available, capped at
+ * ONE_TAP_MAX_COUNT. A one-tap start is meant to be a short session, so it never grows
+ * to 50 the way the /practice setup screen can. Fewer questions than asked is fine —
+ * pickQuestionIds takes at most `count`.
+ */
+export const ONE_TAP_MAX_COUNT = 20;
+
+export function practiceCountFor(available: number): PracticeCount {
+  const capped = Math.min(available, ONE_TAP_MAX_COUNT);
+  return PRACTICE_COUNTS.find((count) => count >= capped) ?? ONE_TAP_MAX_COUNT;
+}
+
 /** A retry ("Алдсануудаа дахин давтах") takes at most this many questions. */
 export const MAX_CUSTOM_QUESTIONS = 100;
 

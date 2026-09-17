@@ -17,12 +17,13 @@ import {
   createPracticeAttemptSchema,
   firstErrorMessage,
   PRACTICE_MESSAGES,
-  questionIdSchema,
   reportQuestionSchema,
   REPORTS_PER_DAY,
+  setBookmarkSchema,
   submitPracticeAnswerSchema,
   type CreatePracticeAttemptInput,
   type ReportQuestionInput,
+  type SetBookmarkInput,
   type SubmitPracticeAnswerInput,
 } from "./practice.schemas";
 
@@ -205,31 +206,35 @@ export async function finishPracticeAttempt(attemptId: string): Promise<ActionEr
   redirect(`/practice/${id}/summary`);
 }
 
-export async function toggleBookmark(
-  questionId: string,
+/**
+ * Sets a question's bookmark to exactly `bookmarked`. Idempotent on purpose: the
+ * caller says what it wants, not "flip it", so a double click on "remove" cannot add
+ * the bookmark back. Returns the state that is now stored.
+ */
+export async function setBookmark(
+  input: SetBookmarkInput,
 ): Promise<{ bookmarked: boolean } | ActionError> {
   await auth.protect();
   const user = await requireUser();
-  const parsed = questionIdSchema.safeParse(questionId);
+  const parsed = setBookmarkSchema.safeParse(input);
   if (!parsed.success) return { error: firstErrorMessage(parsed.error) };
+  const { questionId, bookmarked } = parsed.data;
 
   const question = await db.question.findUnique({
-    where: { id: parsed.data },
+    where: { id: questionId },
     select: { id: true },
   });
   if (!question) return { error: PRACTICE_MESSAGES.notFound };
 
   const key = { userId: user.id, questionId: question.id };
-  // deleteMany / upsert keep a quick double toggle from failing on a missing or
-  // duplicate row.
-  const { count } = await db.bookmark.deleteMany({ where: key });
-  if (count > 0) return { bookmarked: false };
-  await db.bookmark.upsert({
-    where: { userId_questionId: key },
-    create: key,
-    update: {},
-  });
-  return { bookmarked: true };
+  if (bookmarked) {
+    // INSERT ... ON CONFLICT DO NOTHING: adding twice is not an error.
+    await db.bookmark.createMany({ data: [key], skipDuplicates: true });
+  } else {
+    // deleteMany, so removing an already removed bookmark changes nothing.
+    await db.bookmark.deleteMany({ where: key });
+  }
+  return { bookmarked };
 }
 
 export async function reportQuestion(

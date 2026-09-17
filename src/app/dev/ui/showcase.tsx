@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 import { AttemptHeader } from "@/components/quiz/attempt-header";
 import { QuestionCard } from "@/components/quiz/question-card";
 import { QuestionNavigator, type NavigatorItem } from "@/components/quiz/question-navigator";
-import { DEMO_QUESTIONS, EXAM_QUESTIONS } from "./fixtures";
+import { ActivityChart } from "@/components/dashboard/activity-chart";
+import { formatPercent, KpiCard } from "@/components/dashboard/kpi-card";
+import { SubjectProgress } from "@/components/dashboard/subject-progress";
+import { activeDayCount, totalAnswers } from "@/lib/activity";
+import { DEMO_ACTIVITY, DEMO_QUESTIONS, DEMO_SUBJECTS, EXAM_QUESTIONS } from "./fixtures";
 
 // The showcase's own chrome (section titles, dev controls) is in English: it is a
 // developer surface. Everything inside the components is the real Mongolian copy.
@@ -319,6 +323,37 @@ function TypeSpecimen() {
   );
 }
 
+function DashboardStatsDemo() {
+  return (
+    <Section
+      title="Dashboard — KPIs and subject progress"
+      note="Weakest subject first; a subject with nothing answered shows — rather than 0%."
+    >
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <KpiCard label="Нийт асуулт" value="255" />
+        <KpiCard label="Үзсэн" value="85" hint="33%" />
+        <KpiCard label="Цээжилсэн" value="34" hint="13%" />
+        <KpiCard label="Нарийвчлал" value={formatPercent(96 / 135)} hint="96/135 хариулт" />
+      </div>
+      <SubjectProgress subjects={DEMO_SUBJECTS} />
+    </Section>
+  );
+}
+
+function ActivityChartDemo() {
+  return (
+    <Section
+      title="Dashboard — 30-day activity"
+      note="Single indigo series (--chart-1), a text alternative under it and a screen-reader table. Check both themes."
+    >
+      <ActivityChart
+        days={DEMO_ACTIVITY}
+        summary={`Сүүлийн 30 хоногт ${totalAnswers(DEMO_ACTIVITY)} хариулт, ${activeDayCount(DEMO_ACTIVITY)} идэвхтэй өдөр.`}
+      />
+    </Section>
+  );
+}
+
 export function UiShowcase() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
@@ -366,6 +401,8 @@ export function UiShowcase() {
       <HeaderStates />
       <ExamRunner />
       <NavigatorDemo />
+      <DashboardStatsDemo />
+      <ActivityChartDemo />
       <TypeSpecimen />
     </div>
   );

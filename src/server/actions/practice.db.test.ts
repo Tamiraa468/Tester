@@ -8,7 +8,7 @@ import {
   finishPracticeAttempt,
   reportQuestion,
   submitPracticeAnswer,
-  toggleBookmark,
+  setBookmark,
 } from "./practice";
 import { PRACTICE_MESSAGES } from "./practice.schemas";
 
@@ -175,11 +175,20 @@ describe("practice", () => {
     );
   });
 
-  it("toggles bookmarks and limits reports", async () => {
-    const { bank } = await setup();
+  it("sets bookmarks idempotently and limits reports", async () => {
+    const { bank, alice } = await setup();
+    const userId = await scope.userId(alice.clerkId);
     const [questionId] = bank.questionIds;
-    expect(await toggleBookmark(questionId)).toEqual({ bookmarked: true });
-    expect(await toggleBookmark(questionId)).toEqual({ bookmarked: false });
+    const bookmarks = () => db.bookmark.count({ where: { userId, questionId } });
+
+    expect(await setBookmark({ questionId, bookmarked: true })).toEqual({ bookmarked: true });
+    // Adding twice is not an error and does not duplicate the row.
+    expect(await setBookmark({ questionId, bookmarked: true })).toEqual({ bookmarked: true });
+    expect(await bookmarks()).toBe(1);
+    expect(await setBookmark({ questionId, bookmarked: false })).toEqual({ bookmarked: false });
+    // A double click on "remove" must not add it back.
+    expect(await setBookmark({ questionId, bookmarked: false })).toEqual({ bookmarked: false });
+    expect(await bookmarks()).toBe(0);
     expect(await reportQuestion({ questionId, message: " абв " })).toEqual({
       error: PRACTICE_MESSAGES.reportTooShort,
     });

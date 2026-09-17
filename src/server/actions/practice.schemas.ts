@@ -53,7 +53,13 @@ export const submitPracticeAnswerSchema = z.strictObject({
 export type SubmitPracticeAnswerInput = z.input<typeof submitPracticeAnswerSchema>;
 
 export const attemptIdSchema = generatedId;
-export const questionIdSchema = generatedId;
+
+/** Idempotent: the caller states the state it wants, not "flip it". */
+export const setBookmarkSchema = z.strictObject({
+  questionId: generatedId,
+  bookmarked: z.boolean(invalid),
+});
+export type SetBookmarkInput = z.input<typeof setBookmarkSchema>;
 
 export const reportQuestionSchema = z.strictObject({
   questionId: generatedId,

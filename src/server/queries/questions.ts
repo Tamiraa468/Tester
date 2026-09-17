@@ -1,5 +1,6 @@
 import "server-only";
 import { AttemptSource } from "@/generated/prisma/enums";
+import { now as clockNow } from "@/lib/clock";
 import { db } from "@/lib/db";
 import { cryptoRandomInt } from "@/lib/quiz/random";
 import { buildQuestionOrder } from "@/lib/quiz/shuffle";
@@ -52,7 +53,9 @@ export async function pickQuestionIds(input: PickQuestionIdsInput): Promise<stri
   const count = Math.floor(input.count);
   if (!(count > 0)) return [];
 
-  const now = new Date();
+  // The app clock, so a count and a pick agree with the timestamps written by an
+  // attempt (and so the database suite can move "due" around).
+  const now = clockNow();
   const filter: SourceFilter =
     source === AttemptSource.CUSTOM
       ? {
@@ -101,7 +104,7 @@ export async function countsBySource(
   userId: string,
   subjectId?: string | null,
 ): Promise<SourceCounts> {
-  const now = new Date();
+  const now = clockNow();
   const counts = await Promise.all(
     COUNTED_SOURCES.map((source) =>
       db.question.count({

@@ -6,6 +6,9 @@ import {
   COUNTED_SOURCES,
   incorrectItemsWhere,
   MAX_CUSTOM_QUESTIONS,
+  ONE_TAP_MAX_COUNT,
+  practiceCountFor,
+  PRACTICE_COUNTS,
   progressOrderForSource,
   questionWhereForSource,
 } from "./question-sources";
@@ -128,5 +131,23 @@ describe("incorrectItemsWhere", () => {
     expect(incorrectItemsWhere(AttemptMode.EXAM)).toEqual({
       OR: [{ selectedOptionId: null }, { isCorrect: false }, { isCorrect: null }],
     });
+  });
+});
+
+describe("practiceCountFor", () => {
+  it("rounds up to an offered size and caps a one-tap start at 20", () => {
+    expect(practiceCountFor(7)).toBe(10);
+    expect(practiceCountFor(10)).toBe(10);
+    expect(practiceCountFor(11)).toBe(20);
+    expect(practiceCountFor(15)).toBe(20);
+    expect(practiceCountFor(20)).toBe(20);
+    expect(practiceCountFor(120)).toBe(20);
+  });
+
+  it("never returns a size the create schema would reject", () => {
+    for (const available of [0, 1, 9, 21, 50, 999]) {
+      expect(PRACTICE_COUNTS).toContain(practiceCountFor(available));
+      expect(practiceCountFor(available)).toBeLessThanOrEqual(ONE_TAP_MAX_COUNT);
+    }
   });
 });
