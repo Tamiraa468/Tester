@@ -23,12 +23,14 @@ export const getOrCreateDbUser = cache(async () => {
     clerkUser?.username ||
     null;
 
-  // Upsert (not create) so concurrent first requests don't collide on clerkId.
-  return db.user.upsert({
-    where: { clerkId: userId },
-    update: {},
-    create: { clerkId: userId, email, name },
+  // INSERT ... ON CONFLICT DO NOTHING, then read: concurrent first requests can't
+  // collide on clerkId. (upsert() with an empty update is a read-then-insert in Prisma
+  // and fails on the unique key under that race.)
+  await db.user.createMany({
+    data: [{ clerkId: userId, email, name }],
+    skipDuplicates: true,
   });
+  return db.user.findUniqueOrThrow({ where: { clerkId: userId } });
 });
 
 export async function requireUser() {

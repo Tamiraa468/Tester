@@ -11,10 +11,12 @@ import { Button } from "@/components/ui/button";
 export function FlagButton({
   flagged,
   onToggle,
+  disabled,
   className,
 }: {
   flagged: boolean;
   onToggle?: () => void;
+  disabled?: boolean;
   className?: string;
 }) {
   return (
@@ -24,6 +26,7 @@ export function FlagButton({
       size="sm"
       aria-pressed={flagged}
       onClick={onToggle}
+      disabled={disabled}
       className={cn(flagged && "text-warning", className)}
     >
       <FlagIcon className={cn(flagged && "fill-current")} aria-hidden="true" />

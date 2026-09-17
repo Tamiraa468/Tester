@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { Prisma } from "../src/generated/prisma/client";
 import { createPrismaClient } from "../src/lib/prisma";
 
 // Idempotent demo seed: every write is keyed on a stable unique value
@@ -196,7 +197,10 @@ const questions: SeedQuestion[] = [
   },
 ];
 
+const DEFAULT_PRESET_ID = "seed-preset-default";
 const TRIAL_PRESET_ID = "seed-preset-trial";
+// Dev only: never seeded in production, and hidden there by isPresetOffered().
+const QUICK_PRESET_ID = "seed-preset-quick";
 
 async function main() {
   const subjectIds = new Map<SubjectSlug, string>();
@@ -247,26 +251,60 @@ async function main() {
     ]);
   }
 
-  // 10 questions: 5 from each subject (each has at least 5 active questions).
-  const preset = {
-    name: "Туршилтын шалгалт",
-    questionCount: 10,
-    timeLimitMin: 15,
-    distribution: {
-      [subjectIds.get("research-methodology")!]: 5,
-      [subjectIds.get("philosophy-of-science")!]: 5,
+  const presets: { id: string; data: Prisma.ExamPresetCreateWithoutAttemptsInput }[] = [
+    {
+      // Placeholder for the real exam: 100 questions from the whole bank. Its card
+      // explains that the bank is too small until enough questions are imported.
+      id: DEFAULT_PRESET_ID,
+      data: {
+        name: "Үндсэн шалгалт",
+        questionCount: 100,
+        timeLimitMin: 90,
+        distribution: Prisma.DbNull,
+        isActive: true,
+        sortOrder: 0,
+      },
     },
-    isActive: true,
-    sortOrder: 0,
-  };
-  await prisma.examPreset.upsert({
-    where: { id: TRIAL_PRESET_ID },
-    update: preset,
-    create: { id: TRIAL_PRESET_ID, ...preset },
-  });
+    {
+      // 10 questions: 5 from each subject (each has at least 5 active questions).
+      id: TRIAL_PRESET_ID,
+      data: {
+        name: "Туршилтын шалгалт",
+        questionCount: 10,
+        timeLimitMin: 15,
+        distribution: {
+          [subjectIds.get("research-methodology")!]: 5,
+          [subjectIds.get("philosophy-of-science")!]: 5,
+        },
+        isActive: true,
+        sortOrder: 1,
+      },
+    },
+  ];
+  if (process.env.NODE_ENV !== "production") {
+    // For trying the countdown, the 10 / 1 minute announcements and auto-submit by hand.
+    presets.push({
+      id: QUICK_PRESET_ID,
+      data: {
+        name: "Хурдан туршилт",
+        questionCount: 3,
+        timeLimitMin: 2,
+        distribution: Prisma.DbNull,
+        isActive: true,
+        sortOrder: 2,
+      },
+    });
+  }
+  for (const preset of presets) {
+    await prisma.examPreset.upsert({
+      where: { id: preset.id },
+      update: preset.data,
+      create: { id: preset.id, ...preset.data },
+    });
+  }
 
   console.log(
-    `Seeded ${subjects.length} subjects, ${questions.length} questions, 1 exam preset.`,
+    `Seeded ${subjects.length} subjects, ${questions.length} questions, ${presets.length} exam presets.`,
   );
 }
 

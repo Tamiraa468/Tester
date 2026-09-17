@@ -3,7 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { CheckIcon, XIcon } from "lucide-react";
 import { cn } from "cn";
-import { focusMoveForKey, isChooseKey, moveFocusIndex } from "@/lib/quiz/keyboard";
+import {
+  focusMoveForKey,
+  isChooseKey,
+  isRepeatedActivation,
+  moveFocusIndex,
+} from "@/lib/quiz/keyboard";
 import { letterFor } from "@/lib/quiz/letters";
 
 export type AnswerOption = {
@@ -22,9 +27,14 @@ export type OptionListProps = {
   correctOptionId?: string | null;
   /** Read-only: an answered practice item or a submitted attempt. */
   readOnly?: boolean;
+  /** Answer being saved, or navigation pending: nothing can be chosen meanwhile. */
+  busy?: boolean;
   onChoose?: (optionId: string) => void;
-  /** Labels the list for screen readers, e.g. the question number. */
-  label: string;
+  /** Names the list for screen readers: the id of the question text, or a label. */
+  labelledBy?: string;
+  label?: string;
+  /** Focus the list's tab stop on mount (a page with a single question). */
+  focusOnMount?: boolean;
 };
 
 /**
@@ -42,8 +52,11 @@ export function OptionList({
   selectedOptionId,
   correctOptionId,
   readOnly = false,
+  busy = false,
   onChoose,
+  labelledBy,
   label,
+  focusOnMount = false,
 }: OptionListProps) {
   const selectedIndex = options.findIndex((option) => option.id === selectedOptionId);
   // Roving tabindex: the list is one tab stop, and it starts on the chosen option.
@@ -51,6 +64,12 @@ export function OptionList({
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   // Only steal focus after a key moved it, never on render or on a parent re-render.
   const pendingFocus = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!focusOnMount) return;
+    // The option holding the roving tab stop (tabIndex 0) is the one to land on.
+    itemRefs.current.find((node) => node?.tabIndex === 0)?.focus({ preventScroll: true });
+  }, [focusOnMount]);
 
   useEffect(() => {
     const index = pendingFocus.current;
@@ -61,7 +80,7 @@ export function OptionList({
 
   const choose = (index: number) => {
     const option = options[index];
-    if (!option || readOnly || !onChoose) return;
+    if (!option || readOnly || busy || !onChoose) return;
     setFocusIndex(index);
     onChoose(option.id);
   };
@@ -79,20 +98,26 @@ export function OptionList({
       return;
     }
 
-    if (isChooseKey(event.key)) {
+    // The listbox only receives keys while one of its options has focus, so Enter and
+    // Space answer only from a focused option. Held keys (auto-repeat) never answer.
+    if (isChooseKey(event)) {
       // Space would scroll the page; Enter would submit a surrounding form.
       event.preventDefault();
       choose(focusIndex);
+    } else if (isRepeatedActivation(event)) {
+      event.preventDefault();
     }
   };
 
   return (
     <div
       role="listbox"
-      aria-label={label}
+      aria-labelledby={labelledBy}
+      aria-label={labelledBy ? undefined : label}
       aria-orientation="vertical"
       aria-readonly={readOnly || undefined}
-      className="flex flex-col gap-2"
+      aria-busy={busy || undefined}
+      className={cn("flex flex-col gap-2 transition-opacity", busy && !readOnly && "opacity-70")}
       onKeyDown={handleKeyDown}
     >
       {options.map((option, index) => {
@@ -112,9 +137,9 @@ export function OptionList({
             onClick={() => choose(index)}
             onFocus={() => setFocusIndex(index)}
             className={cn(
-              "flex items-start gap-3 rounded-lg border p-3 text-left transition-colors outline-none",
+              "flex min-h-14 items-center gap-3 rounded-lg border p-3 text-left transition-colors outline-none sm:p-4",
               "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-              readOnly ? "cursor-default" : "cursor-pointer hover:bg-muted",
+              readOnly || busy ? "cursor-default" : "cursor-pointer hover:bg-muted",
               isSelected && correctOptionId == null && "border-primary bg-primary/5",
               isCorrect && "border-success/50 bg-success/10",
               isWrongChoice && "border-destructive/50 bg-destructive/10",
@@ -123,7 +148,7 @@ export function OptionList({
             <span
               aria-hidden="true"
               className={cn(
-                "flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-medium",
+                "flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-medium",
                 isSelected &&
                   correctOptionId == null &&
                   "border-transparent bg-primary text-primary-foreground",
@@ -135,7 +160,7 @@ export function OptionList({
             </span>
 
             <span className="flex min-w-0 flex-col gap-1">
-              <span className="text-sm leading-relaxed break-words">{option.text}</span>
+              <span className="text-base leading-snug break-words sm:text-sm">{option.text}</span>
               {/* Never colour alone: the state is also spelled out, and read out with the option. */}
               {isCorrect && (
                 <span className="flex items-center gap-1 text-xs font-medium text-success">

@@ -1,10 +1,12 @@
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 // The import pipeline is plain Node code, so no jsdom / React plugins are needed.
 export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
+    // The database suite runs separately: `pnpm test:db` (vitest.db.config.mts).
+    exclude: [...configDefaults.exclude, "**/*.db.test.ts"],
     alias: { "@/": new URL("./src/", import.meta.url).pathname },
     coverage: {
       provider: "v8",

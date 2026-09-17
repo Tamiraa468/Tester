@@ -11,10 +11,12 @@ import { Button } from "@/components/ui/button";
 export function BookmarkButton({
   bookmarked,
   onToggle,
+  disabled,
   className,
 }: {
   bookmarked: boolean;
   onToggle?: () => void;
+  disabled?: boolean;
   className?: string;
 }) {
   return (
@@ -24,6 +26,7 @@ export function BookmarkButton({
       size="sm"
       aria-pressed={bookmarked}
       onClick={onToggle}
+      disabled={disabled}
       className={className}
     >
       <BookmarkIcon className={cn(bookmarked && "fill-current")} aria-hidden="true" />
