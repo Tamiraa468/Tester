@@ -5,7 +5,7 @@ import { readFile as readFileFromDisk } from "node:fs/promises";
 import { Readable } from "node:stream";
 import ExcelJS from "exceljs";
 import Papa from "papaparse";
-import { HEADERS, type Header, type RawRow } from "./types";
+import { HEADERS, REQUIRED_HEADERS, type Header, type RawRow } from "./types";
 
 type SheetRow = { rowNumber: number; cells: string[] };
 
@@ -36,9 +36,17 @@ function rowCells(valueAt: (column: number) => unknown): string[] {
   return cells;
 }
 
+const headerCell = (value: string | undefined) =>
+  (value ?? "").normalize("NFC").trim().toLowerCase();
+
+/**
+ * The required columns must match position by position. A trailing optional column
+ * (currently only "active") may be absent, but if something IS there it has to be that
+ * column rather than an unknown one.
+ */
 function assertHeaderRow(cells: string[]): void {
-  HEADERS.forEach((expected, index) => {
-    const actual = (cells[index] ?? "").normalize("NFC").trim().toLowerCase();
+  REQUIRED_HEADERS.forEach((expected, index) => {
+    const actual = headerCell(cells[index]);
     if (actual !== expected) {
       throw new Error(
         `Толгой мөр таарахгүй: ${index + 1}-р багана "${cells[index] ?? ""}" байна, ` +
@@ -46,6 +54,16 @@ function assertHeaderRow(cells: string[]): void {
       );
     }
   });
+
+  for (let index = REQUIRED_HEADERS.length; index < HEADERS.length; index += 1) {
+    const actual = headerCell(cells[index]);
+    if (actual !== "" && actual !== HEADERS[index]) {
+      throw new Error(
+        `Толгой мөр таарахгүй: ${index + 1}-р багана "${cells[index] ?? ""}" байна, ` +
+          `"${HEADERS[index]}" эсвэл хоосон байх ёстой.`,
+      );
+    }
+  }
 }
 
 function toRawRows(sheetRows: SheetRow[]): RawRow[] {

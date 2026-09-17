@@ -1,7 +1,12 @@
 // Shared types for the question bank import pipeline (read -> parse -> validate -> commit).
 // Nothing here depends on Next.js, so the admin panel can reuse the whole pipeline.
 
-export const HEADERS = [
+/**
+ * Columns every file must have, in this order. `active` is optional and comes after
+ * them, so a file written before it existed (the pilot bank) still validates: the
+ * required headers are a prefix of the template's.
+ */
+export const REQUIRED_HEADERS = [
   "code",
   "subject",
   "question",
@@ -17,6 +22,11 @@ export const HEADERS = [
   "explanation",
   "image_url",
 ] as const;
+
+/** Optional trailing columns. A missing one is read as an empty cell. */
+export const OPTIONAL_HEADERS = ["active"] as const;
+
+export const HEADERS = [...REQUIRED_HEADERS, ...OPTIONAL_HEADERS] as const;
 
 export type Header = (typeof HEADERS)[number];
 
@@ -49,6 +59,12 @@ export type QuestionInput = {
   lockOptions: boolean;
   explanation?: string;
   imageUrl?: string;
+  /**
+   * From the optional "active" column. undefined means the cell said nothing, and an
+   * existing question keeps whatever it already is — a file without the column can
+   * never deactivate anything.
+   */
+  isActive?: boolean;
 };
 
 /** A single problem found in one row. `message` is user-facing, so Mongolian. */
@@ -75,6 +91,8 @@ export type CorrectRef = ColumnRef | { kind: "missing" };
 export type ParsedRow = QuestionInput & {
   correctRef: CorrectRef;
   pinnedRefs: ColumnRef[];
+  /** The raw "active" cell when it could not be read as a flag, for the error message. */
+  activeRaw?: string;
   /** Original 1-based option column of each kept option, same order as `options`. */
   optionColumns: number[];
 };
@@ -107,4 +125,6 @@ export type CommitResult = {
   skipped: number;
   notes: CommitNote[];
   warnings: Issue[];
+  /** Questions with attempts whose correct option moved to a different Option row. */
+  answerKeyChanges: { rowNumber: number; code: string }[];
 };

@@ -60,9 +60,24 @@ function parsePinned(raw: string): ColumnRef[] {
     .filter((ref): ref is ColumnRef => ref !== null);
 }
 
+const TRUE_TOKENS = ["1", "true", "тийм"];
+const FALSE_TOKENS = ["0", "false", "үгүй"];
+
 function parseLock(raw: string): boolean {
+  return TRUE_TOKENS.includes(normalizeText(raw).toLowerCase());
+}
+
+/**
+ * The optional "active" column. An empty cell (or a file without the column at all)
+ * returns undefined: it says nothing, so an existing question keeps the state it has.
+ * Anything unreadable comes back as `raw` for validate.ts to report.
+ */
+export function parseActive(raw: string): { value?: boolean; raw?: string } {
   const token = normalizeText(raw).toLowerCase();
-  return token === "1" || token === "true" || token === "тийм";
+  if (token === "") return {};
+  if (TRUE_TOKENS.includes(token)) return { value: true };
+  if (FALSE_TOKENS.includes(token)) return { value: false };
+  return { raw: normalizeText(raw) };
 }
 
 // Label alphabets a row may be numbered with in the source file (the book prints both
@@ -141,6 +156,7 @@ export function parseRows(raw: RawRow[]): ParseResult {
 
     const explanation = normalizeText(cells.explanation);
     const imageUrl = normalizeText(cells.image_url);
+    const active = parseActive(cells.active ?? "");
 
     rows.push({
       rowNumber,
@@ -151,6 +167,8 @@ export function parseRows(raw: RawRow[]): ParseResult {
       lockOptions: parseLock(cells.lock),
       ...(explanation === "" ? {} : { explanation }),
       ...(imageUrl === "" ? {} : { imageUrl }),
+      ...(active.value === undefined ? {} : { isActive: active.value }),
+      ...(active.raw === undefined ? {} : { activeRaw: active.raw }),
       correctRef,
       pinnedRefs,
       optionColumns,

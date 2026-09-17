@@ -110,6 +110,15 @@ export function validate(rows: ParsedRow[]): ValidationResult {
       }
     }
 
+    if (row.activeRaw !== undefined) {
+      rowErrors.push({
+        ...where,
+        message:
+          `active багана дахь "${row.activeRaw}" эргэлзээтэй. ` +
+          'Зөвхөн 1 (идэвхтэй), 0 (идэвхгүй) эсвэл хоосон байна.',
+      });
+    }
+
     const duplicateCodeRows = row.code === "" ? [] : (rowsByCode.get(row.code) ?? []);
     if (duplicateCodeRows.length > 1) {
       rowErrors.push({
@@ -176,6 +185,7 @@ export function validate(rows: ParsedRow[]): ValidationResult {
         lockOptions: row.lockOptions,
         ...(row.explanation === undefined ? {} : { explanation: row.explanation }),
         ...(row.imageUrl === undefined ? {} : { imageUrl: row.imageUrl }),
+        ...(row.isActive === undefined ? {} : { isActive: row.isActive }),
       });
     }
   }

@@ -19,6 +19,8 @@ export default async function AdminLayout({
     { href: "/admin/subjects", label: "Судлагдахуун" },
     { href: "/admin/exam-presets", label: "Шалгалтын төрөл" },
     { href: "/admin/reports", label: "Ирсэн мэдээлэл", badge: openReports },
+    { href: "/admin/import", label: "Импорт" },
+    { href: "/admin/export", label: "Экспорт" },
   ];
 
   return (

@@ -91,6 +91,17 @@ async function main(): Promise<void> {
       console.log(`  мөр ${note.rowNumber} [${note.code}] ${note.status}: ${note.message ?? ""}`);
     }
 
+    if (result.answerKeyChanges.length > 0) {
+      // The admin panel asks for confirmation and resets the affected users' progress;
+      // the CLI cannot reach that helper (it is server-only), so it says so plainly.
+      const codes = result.answerKeyChanges.map((change) => change.code).join(", ");
+      console.log(
+        `\n⚠ Зөв хариулт өөрчлөгдсөн асуултууд (${result.answerKeyChanges.length}): ${codes}\n` +
+          "  Эдгээрийг хариулж байсан хэрэглэгчдийн давтлага тэглэгдээгүй. " +
+          "Админ хэсгийн Импортоор оруулбал автоматаар тэглэнэ.",
+      );
+    }
+
     console.log(
       `\n✔ Дүн: шинэ ${result.created} | шинэчилсэн ${result.updated} | ` +
         `өөрчлөлтгүй ${result.unchanged} | хүлээлгэсэн ${result.skipped}`,
