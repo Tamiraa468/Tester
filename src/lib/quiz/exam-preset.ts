@@ -25,6 +25,9 @@ export type PresetPlan =
 
 export const PRESET_MESSAGES = {
   invalidConfig: "Шалгалтын тохиргоо буруу байна.",
+  subjectNotFound: "Сонгосон судлагдахууны нэг нь олдсонгүй.",
+  distributionSum: (sum: number, total: number) =>
+    `Судлагдахуунуудын нийлбэр ${sum} байна; асуултын тоо ${total} байх ёстой.`,
   bankTooSmall: (need: number, have: number) =>
     `Асуултын сан хүрэлцэхгүй: ${need} асуулт хэрэгтэй, ${have} байна.`,
   subjectTooSmall: (name: string, need: number, have: number) =>
@@ -71,4 +74,52 @@ export function planPreset(
     total,
     perSubject: entries.map(([subjectId, count]) => ({ subjectId, count })),
   };
+}
+
+/**
+ * The admin form's check for a preset, with a message that says exactly what is wrong
+ * (planPreset answers the /exam page, where "тохиргоо буруу" is all a student needs).
+ *
+ * It ends by running planPreset itself, so a preset can never be saved that the exam
+ * page would then refuse to offer.
+ */
+export function validatePresetConfig(
+  preset: { questionCount: number; distribution: Record<string, number> | null },
+  bank: BankCounts,
+  subjectNames: ReadonlyMap<string, string>,
+): { ok: true } | { ok: false; reason: string } {
+  const total = preset.questionCount;
+  if (!Number.isInteger(total) || total < 1) {
+    return { ok: false, reason: PRESET_MESSAGES.invalidConfig };
+  }
+
+  if (preset.distribution === null) {
+    return total <= bank.total
+      ? { ok: true }
+      : { ok: false, reason: PRESET_MESSAGES.bankTooSmall(total, bank.total) };
+  }
+
+  const entries = Object.entries(preset.distribution);
+  if (entries.length === 0) return { ok: false, reason: PRESET_MESSAGES.invalidConfig };
+  if (entries.some(([subjectId]) => !subjectNames.has(subjectId))) {
+    return { ok: false, reason: PRESET_MESSAGES.subjectNotFound };
+  }
+
+  const sum = entries.reduce((acc, [, count]) => acc + count, 0);
+  if (sum !== total) return { ok: false, reason: PRESET_MESSAGES.distributionSum(sum, total) };
+
+  const shortages: string[] = [];
+  for (const [subjectId, need] of entries) {
+    // A subject with no active questions at all is absent from bySubject.
+    const have = bank.bySubject.get(subjectId)?.count ?? 0;
+    if (have < need) {
+      shortages.push(
+        PRESET_MESSAGES.subjectTooSmall(subjectNames.get(subjectId) ?? subjectId, need, have),
+      );
+    }
+  }
+  if (shortages.length > 0) return { ok: false, reason: shortages.join(" ") };
+
+  const plan = planPreset(preset, bank);
+  return plan.ok ? { ok: true } : { ok: false, reason: plan.reason };
 }

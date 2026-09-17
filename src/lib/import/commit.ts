@@ -5,7 +5,7 @@
 // stores option ids, and re-importing a fixed file must not invalidate existing attempts.
 
 import type { Prisma, PrismaClient } from "../../generated/prisma/client";
-import { slugify } from "../slug";
+import { uniqueSubjectSlug } from "./subject-slug";
 import type { CommitResult, OptionInput, QuestionInput } from "./types";
 
 type Tx = Prisma.TransactionClient;
@@ -33,17 +33,12 @@ async function resolveSubjectId(
     return existing.id;
   }
 
-  // Subject.slug is unique and transliteration can collide (ө and о both become "o").
-  const base = slugify(name) || "subject";
-  let slug = base;
-  let suffix = 2;
-  while (await tx.subject.findUnique({ where: { slug }, select: { id: true } })) {
-    slug = `${base}-${suffix}`;
-    suffix += 1;
-  }
-
   const created = await tx.subject.create({
-    data: { name, slug, sortOrder: await tx.subject.count() },
+    data: {
+      name,
+      slug: await uniqueSubjectSlug(tx, name),
+      sortOrder: await tx.subject.count(),
+    },
   });
   cache.set(name, created.id);
   return created.id;

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { isPresetOffered, planPreset, PRESET_MESSAGES, type BankCounts } from "./exam-preset";
+import {
+  isPresetOffered,
+  planPreset,
+  PRESET_MESSAGES,
+  validatePresetConfig,
+  type BankCounts,
+} from "./exam-preset";
 
 const bank: BankCounts = {
   total: 18,
@@ -85,5 +91,79 @@ describe("isPresetOffered", () => {
     expect(isPresetOffered("seed-preset-quick", "development")).toBe(true);
     expect(isPresetOffered("seed-preset-quick", undefined)).toBe(true);
     expect(isPresetOffered("seed-preset-default", "production")).toBe(true);
+  });
+});
+
+describe("validatePresetConfig", () => {
+  const names = new Map([
+    ["s1", "Статистик"],
+    ["s2", "Философи"],
+    ["s3", "Эрх зүй"],
+    // A subject that exists but has no active questions at all, so the bank omits it.
+    ["s4", "Хоосон"],
+  ]);
+  const check = (questionCount: number, distribution: Record<string, number> | null) =>
+    validatePresetConfig({ questionCount, distribution }, bank, names);
+
+  it("accepts a preset the bank can fill", () => {
+    expect(check(10, null)).toEqual({ ok: true });
+    expect(check(10, { s1: 5, s2: 5 })).toEqual({ ok: true });
+  });
+
+  it("says what the counts add up to when they do not match", () => {
+    expect(check(10, { s1: 4, s2: 4 })).toEqual({
+      ok: false,
+      reason: PRESET_MESSAGES.distributionSum(8, 10),
+    });
+    expect(check(10, { s1: 6, s2: 5 })).toEqual({
+      ok: false,
+      reason: PRESET_MESSAGES.distributionSum(11, 10),
+    });
+  });
+
+  it("names every subject that is short of ACTIVE questions", () => {
+    expect(check(12, { s1: 7, s2: 5 })).toEqual({
+      ok: false,
+      reason: PRESET_MESSAGES.subjectTooSmall("Статистик", 7, 6),
+    });
+    // A subject with no active questions is missing from the bank, and counts as zero.
+    expect(check(4, { s4: 4 })).toEqual({
+      ok: false,
+      reason: PRESET_MESSAGES.subjectTooSmall("Хоосон", 4, 0),
+    });
+    const both = check(14, { s1: 7, s2: 7 });
+    expect(both.ok).toBe(false);
+    expect(both.ok || both.reason).toContain("Статистик");
+    expect(both.ok || both.reason).toContain("Философи");
+  });
+
+  it("refuses a subject that does not exist and an empty distribution", () => {
+    expect(check(5, { nope: 5 })).toEqual({ ok: false, reason: PRESET_MESSAGES.subjectNotFound });
+    expect(check(5, {})).toEqual({ ok: false, reason: PRESET_MESSAGES.invalidConfig });
+  });
+
+  it("refuses more questions than the whole bank holds", () => {
+    expect(check(19, null)).toEqual({
+      ok: false,
+      reason: PRESET_MESSAGES.bankTooSmall(19, 18),
+    });
+  });
+
+  it("refuses a question count that is not a positive integer", () => {
+    expect(check(0, null).ok).toBe(false);
+    expect(check(-3, null).ok).toBe(false);
+    expect(check(2.5, null).ok).toBe(false);
+  });
+
+  it("never accepts what planPreset would refuse", () => {
+    const cases: (Record<string, number> | null)[] = [null, { s1: 5, s2: 5 }, { s1: 6, s2: 5, s3: 7 }];
+    for (const distribution of cases) {
+      const total = distribution
+        ? Object.values(distribution).reduce((sum, count) => sum + count, 0)
+        : 10;
+      if (validatePresetConfig({ questionCount: total, distribution }, bank, names).ok) {
+        expect(planPreset({ questionCount: total, distribution }, bank).ok).toBe(true);
+      }
+    }
   });
 });

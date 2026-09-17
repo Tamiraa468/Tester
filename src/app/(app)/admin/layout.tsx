@@ -16,6 +16,8 @@ export default async function AdminLayout({
   const links: AdminNavLink[] = [
     { href: "/admin", label: "Тойм" },
     { href: "/admin/questions", label: "Асуултууд" },
+    { href: "/admin/subjects", label: "Судлагдахуун" },
+    { href: "/admin/exam-presets", label: "Шалгалтын төрөл" },
     { href: "/admin/reports", label: "Ирсэн мэдээлэл", badge: openReports },
   ];
 

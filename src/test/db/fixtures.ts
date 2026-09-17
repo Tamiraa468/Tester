@@ -86,6 +86,18 @@ export class TestScope {
     return questionId;
   }
 
+  /** Same, for a preset a test created through a server action. */
+  trackPreset(presetId: string): string {
+    this.presetIds.push(presetId);
+    return presetId;
+  }
+
+  /** Same, for a subject a test created through a server action. */
+  trackSubject(subjectId: string): string {
+    this.subjectIds.push(subjectId);
+    return subjectId;
+  }
+
   async preset(data: {
     questionCount: number;
     timeLimitMin: number;
