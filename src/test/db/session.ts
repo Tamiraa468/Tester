@@ -1,8 +1,17 @@
 import { expect } from "vitest";
 
-/** Signs the mocked Clerk session in as this Clerk user id (null: signed out). */
-export function signInAs(clerkId: string | null): void {
-  (globalThis as { __testClerkUserId?: string | null }).__testClerkUserId = clerkId;
+type Session = { userId: string | null; admin: boolean };
+
+/**
+ * Signs the mocked Clerk session in as this Clerk user id (null: signed out).
+ * `admin` puts { role: "admin" } in the session claims, the way the real token does
+ * once the Clerk Dashboard is configured; without it requireAdmin() redirects.
+ */
+export function signInAs(clerkId: string | null, { admin = false } = {}): void {
+  (globalThis as { __testClerkSession?: Session }).__testClerkSession = {
+    userId: clerkId,
+    admin: clerkId === null ? false : admin,
+  };
 }
 
 /** Awaits an action that should redirect and returns the target URL. */

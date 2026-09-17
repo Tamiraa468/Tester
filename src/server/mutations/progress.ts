@@ -70,3 +70,26 @@ export async function applyProgress(
     ) AS v("questionId", "box", "correctCount", "wrongCount", "lastAnsweredAt", "nextReviewAt")
     WHERE p."userId" = ${userId} AND p."questionId" = v."questionId"`;
 }
+
+/**
+ * Puts every user's progress for ONE question back to box 0 and makes it due now.
+ *
+ * Used when an admin changes which option is correct: what those users learnt was
+ * graded against the old key, so their schedule is no longer meaningful. The answer
+ * counts and lastAnsweredAt are left alone — they are history — and graded
+ * AttemptItems are never touched, so old attempts keep their results.
+ *
+ * Lives here because this module owns every write to QuestionProgress; applyProgress()
+ * cannot express a reset, since it only ever applies a Leitner transition.
+ */
+export async function resetProgressForQuestion(
+  tx: Prisma.TransactionClient,
+  questionId: string,
+  at: Date,
+): Promise<number> {
+  const { count } = await tx.questionProgress.updateMany({
+    where: { questionId },
+    data: { box: 0, nextReviewAt: at },
+  });
+  return count;
+}

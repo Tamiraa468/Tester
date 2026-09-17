@@ -5,6 +5,7 @@ import {
   firstErrorMessage,
   PRACTICE_MESSAGES,
   reportQuestionSchema,
+  setBookmarkSchema,
   submitPracticeAnswerSchema,
 } from "./practice.schemas";
 
@@ -100,5 +101,25 @@ describe("reportQuestionSchema", () => {
     expect(messageOf(reportQuestionSchema.safeParse({ questionId: ID, message: 12345 }))).toBe(
       PRACTICE_MESSAGES.invalid,
     );
+  });
+});
+
+describe("an unexpected key", () => {
+  // All user-facing text is Mongolian, and an action returns its first issue straight
+  // to the UI, so Zod's own English "Unrecognized key" must never get out.
+  it("is refused in Mongolian by every schema", () => {
+    const cases: [string, { safeParse: (value: unknown) => { success: boolean; error?: unknown } }, object][] = [
+      ["createPracticeAttempt", createPracticeAttemptSchema, { source: "RANDOM", count: 10 }],
+      ["createPracticeAttempt retry", createPracticeAttemptSchema, { source: "CUSTOM", fromAttemptId: ID }],
+      ["submitPracticeAnswer", submitPracticeAnswerSchema, { attemptItemId: ID, optionId: ID2 }],
+      ["setBookmark", setBookmarkSchema, { questionId: ID, bookmarked: true }],
+      ["reportQuestion", reportQuestionSchema, { questionId: ID, message: "Алдаа байна" }],
+    ];
+
+    for (const [name, schema, valid] of cases) {
+      expect(schema.safeParse(valid).success, name).toBe(true);
+      const result = schema.safeParse({ ...valid, unexpected: 1 });
+      expect(messageOf(result), name).toBe(PRACTICE_MESSAGES.invalid);
+    }
   });
 });

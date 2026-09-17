@@ -22,9 +22,14 @@ export const presetIdSchema = z.string(invalid).trim().min(1, invalid).max(191, 
 export const examAttemptIdSchema = generatedId;
 export const attemptItemIdSchema = generatedId;
 
-export const saveExamAnswerSchema = z.strictObject({
-  attemptItemId: generatedId,
-  /** null clears the answer. */
-  optionId: generatedId.nullable(),
-});
+// `invalid` is passed to strictObject too: without it an unexpected key surfaces Zod's
+// own English "Unrecognized key" text.
+export const saveExamAnswerSchema = z.strictObject(
+  {
+    attemptItemId: generatedId,
+    /** null clears the answer. */
+    optionId: generatedId.nullable(),
+  },
+  invalid,
+);
 export type SaveExamAnswerInput = z.input<typeof saveExamAnswerSchema>;

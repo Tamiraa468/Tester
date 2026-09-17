@@ -77,6 +77,15 @@ export class TestScope {
     return { id: subject.id, name: subject.name, questionIds };
   }
 
+  /**
+   * Registers a question a test created through a server action, so cleanup() removes
+   * it (and, before its subject, satisfies the foreign key).
+   */
+  trackQuestion(questionId: string): string {
+    this.questionIds.push(questionId);
+    return questionId;
+  }
+
   async preset(data: {
     questionCount: number;
     timeLimitMin: number;

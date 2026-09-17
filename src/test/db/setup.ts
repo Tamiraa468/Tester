@@ -21,14 +21,25 @@ vi.mock("next/navigation", () => ({
   },
 }));
 
-// Signed-in user for server actions; see signInAs() in ./session.
+// Signed-in user for server actions; see signInAs() in ./session. The session claims
+// carry the role the same way the real token does, so requireAdmin() can be exercised.
 vi.mock("@clerk/nextjs/server", () => {
-  const current = () => (globalThis as { __testClerkUserId?: string | null }).__testClerkUserId ?? null;
-  const auth = Object.assign(async () => ({ userId: current(), sessionClaims: {} }), {
-    protect: async () => {
-      if (!current()) throw new Error("UNAUTHENTICATED");
-      return { userId: current() };
+  type Session = { userId: string | null; admin: boolean };
+  const session = (): Session =>
+    (globalThis as { __testClerkSession?: Session }).__testClerkSession ?? {
+      userId: null,
+      admin: false,
+    };
+  const claims = () => (session().admin ? { metadata: { role: "admin" } } : { metadata: {} });
+  const auth = Object.assign(
+    async () => ({ userId: session().userId, sessionClaims: claims() }),
+    {
+      protect: async () => {
+        const { userId } = session();
+        if (!userId) throw new Error("UNAUTHENTICATED");
+        return { userId };
+      },
     },
-  });
+  );
   return { auth, currentUser: async () => null };
 });

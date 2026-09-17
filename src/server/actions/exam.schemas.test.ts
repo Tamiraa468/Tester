@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   attemptItemIdSchema,
   examAttemptIdSchema,
+  EXAM_MESSAGES,
   presetIdSchema,
   saveExamAnswerSchema,
 } from "./exam.schemas";
@@ -45,5 +46,18 @@ describe("generated id schemas", () => {
     expect(examAttemptIdSchema.safeParse(ID).success).toBe(true);
     expect(attemptItemIdSchema.safeParse(ID).success).toBe(true);
     expect(examAttemptIdSchema.safeParse("seed-preset-trial").success).toBe(false);
+  });
+});
+
+describe("an unexpected key", () => {
+  // The action hands its first issue to the UI, which is Mongolian only.
+  it("is refused with the Mongolian message, not Zod's English one", () => {
+    const result = saveExamAnswerSchema.safeParse({
+      attemptItemId: ID,
+      optionId: null,
+      unexpected: 1,
+    });
+    expect(result.success).toBe(false);
+    expect(result.success || result.error.issues[0].message).toBe(EXAM_MESSAGES.invalid);
   });
 });

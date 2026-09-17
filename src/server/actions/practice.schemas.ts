@@ -26,49 +26,58 @@ export const PRACTICE_MESSAGES = {
 } as const;
 
 const invalid = { error: PRACTICE_MESSAGES.invalid };
+// Every strictObject below is given `invalid` as well: without it an unexpected key
+// surfaces Zod's own English "Unrecognized key" text, and actions return their first
+// issue straight to the UI.
 const generatedId = z.cuid(invalid);
 
 export const createPracticeAttemptSchema = z.discriminatedUnion(
   "source",
   [
-    z.strictObject({
-      source: z.enum(COUNTED_SOURCES, invalid),
-      subjectId: generatedId.nullish(),
-      count: z.literal(PRACTICE_COUNTS, invalid),
-    }),
+    z.strictObject(
+      {
+        source: z.enum(COUNTED_SOURCES, invalid),
+        subjectId: generatedId.nullish(),
+        count: z.literal(PRACTICE_COUNTS, invalid),
+      },
+      invalid,
+    ),
     // A retry: the server derives the questions (and their number) from the attempt.
-    z.strictObject({
-      source: z.literal(AttemptSource.CUSTOM, invalid),
-      fromAttemptId: generatedId,
-    }),
+    z.strictObject(
+      { source: z.literal(AttemptSource.CUSTOM, invalid), fromAttemptId: generatedId },
+      invalid,
+    ),
   ],
   invalid,
 );
 export type CreatePracticeAttemptInput = z.input<typeof createPracticeAttemptSchema>;
 
-export const submitPracticeAnswerSchema = z.strictObject({
-  attemptItemId: generatedId,
-  optionId: generatedId,
-});
+export const submitPracticeAnswerSchema = z.strictObject(
+  { attemptItemId: generatedId, optionId: generatedId },
+  invalid,
+);
 export type SubmitPracticeAnswerInput = z.input<typeof submitPracticeAnswerSchema>;
 
 export const attemptIdSchema = generatedId;
 
 /** Idempotent: the caller states the state it wants, not "flip it". */
-export const setBookmarkSchema = z.strictObject({
-  questionId: generatedId,
-  bookmarked: z.boolean(invalid),
-});
+export const setBookmarkSchema = z.strictObject(
+  { questionId: generatedId, bookmarked: z.boolean(invalid) },
+  invalid,
+);
 export type SetBookmarkInput = z.input<typeof setBookmarkSchema>;
 
-export const reportQuestionSchema = z.strictObject({
-  questionId: generatedId,
-  message: z
-    .string(invalid)
-    .trim()
-    .min(REPORT_MESSAGE_MIN, { error: PRACTICE_MESSAGES.reportTooShort })
-    .max(REPORT_MESSAGE_MAX, { error: PRACTICE_MESSAGES.reportTooLong }),
-});
+export const reportQuestionSchema = z.strictObject(
+  {
+    questionId: generatedId,
+    message: z
+      .string(invalid)
+      .trim()
+      .min(REPORT_MESSAGE_MIN, { error: PRACTICE_MESSAGES.reportTooShort })
+      .max(REPORT_MESSAGE_MAX, { error: PRACTICE_MESSAGES.reportTooLong }),
+  },
+  invalid,
+);
 export type ReportQuestionInput = z.input<typeof reportQuestionSchema>;
 
 /** Every schema above carries a Mongolian message, so the first issue is shown as is. */
