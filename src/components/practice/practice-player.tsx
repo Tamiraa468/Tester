@@ -11,6 +11,7 @@ import { KeyboardHelpDialog } from "@/components/quiz/keyboard-help-dialog";
 import { QuestionCard } from "@/components/quiz/question-card";
 import { ReportQuestionDialog } from "@/components/quiz/report-question-dialog";
 import { useBookmark } from "@/components/practice/use-bookmark";
+import { mn } from "@/lib/i18n/mn";
 import { isRepeatedActivation } from "@/lib/quiz/keyboard";
 import {
   finishPracticeAttempt,
@@ -92,6 +93,9 @@ export function PracticePlayer({
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+      {/* The player has no visible page title — the question is the content — but the
+          document still needs one h1 to be navigable. */}
+      <h1 className="sr-only">{mn.nav.practice}</h1>
       <AttemptHeader position={item.position} total={total} answeredCount={answeredCount} />
 
       <QuestionCard
@@ -116,13 +120,13 @@ export function PracticePlayer({
         focusOnMount={!answered}
       />
 
+      {/* The action bar stays under the thumb on a phone whether or not the question is
+          answered, so its position never shifts mid-question and the explanation can
+          push the page down behind it. From sm up it goes back into the flow. */}
       <div
         className={cn(
-          "flex items-center gap-2",
-          // Once answered, the action bar stays under the thumb on small screens while
-          // the explanation pushes the page down.
-          answered &&
-            "sticky bottom-0 z-10 -mx-4 border-t bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none",
+          "sticky bottom-0 z-10 -mx-4 flex min-h-16 items-center gap-2 border-t bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur",
+          "sm:static sm:mx-0 sm:min-h-0 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none",
         )}
       >
         <ReportQuestionDialog
@@ -142,7 +146,7 @@ export function PracticePlayer({
               if (isRepeatedActivation(event)) event.preventDefault();
             }}
           >
-            {isLast ? "Дүн харах" : "Дараагийн асуулт"}
+            {isLast ? mn.actions.showResult : mn.actions.nextQuestion}
             <ArrowRightIcon aria-hidden="true" />
           </Button>
         )}

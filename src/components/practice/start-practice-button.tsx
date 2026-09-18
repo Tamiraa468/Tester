@@ -4,6 +4,7 @@ import { useId, useTransition } from "react";
 import { PlayIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { mn } from "@/lib/i18n/mn";
 import { createPracticeAttempt } from "@/server/actions/practice";
 import { practiceCountFor, type CountedSource } from "@/server/queries/question-sources";
 
@@ -40,7 +41,7 @@ export function StartPracticeButton({
   return (
     <Button type="button" onClick={start} disabled={starting || available === 0} {...button}>
       <PlayIcon aria-hidden="true" />
-      {starting ? "Бэлтгэж байна…" : children}
+      {starting ? mn.actions.preparing : children}
     </Button>
   );
 }

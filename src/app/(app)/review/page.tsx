@@ -7,15 +7,16 @@ import { ReviewQuestionList } from "@/components/review/review-question-list";
 import { parseReviewTab, REVIEW_TAB_LABELS, ReviewTabs } from "@/components/review/review-tabs";
 import { AttemptSource } from "@/generated/prisma/enums";
 import { requireUser } from "@/lib/auth";
+import { mn } from "@/lib/i18n/mn";
 import { finalizeMyExpiredExam } from "@/server/actions/exam";
 import { getReviewCounts, listReviewQuestions } from "@/server/queries/progress";
 
-export const metadata: Metadata = { title: "Давтах" };
+export const metadata: Metadata = { title: mn.nav.review };
 
 const EMPTY_TEXT: Record<ReturnType<typeof parseReviewTab>, string> = {
-  [AttemptSource.DUE]: "Одоогоор давтах хугацаа болсон асуулт алга. Сайн байна!",
-  [AttemptSource.WRONG]: "Алдсан асуулт алга байна.",
-  [AttemptSource.BOOKMARKED]: "Та одоогоор асуулт тэмдэглээгүй байна.",
+  [AttemptSource.DUE]: mn.states.emptyDue,
+  [AttemptSource.WRONG]: mn.states.emptyWrong,
+  [AttemptSource.BOOKMARKED]: mn.states.emptyBookmarked,
 };
 
 export default async function ReviewPage({ searchParams }: PageProps<"/review">) {
@@ -39,8 +40,8 @@ export default async function ReviewPage({ searchParams }: PageProps<"/review">)
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">Давтах</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-2xl font-semibold">{mn.nav.review}</h1>
+        <p className="reading-sm measure text-muted-foreground">
           Давтах хугацаа болсон, алдсан болон тэмдэглэсэн асуултууд.
         </p>
       </div>
@@ -51,7 +52,7 @@ export default async function ReviewPage({ searchParams }: PageProps<"/review">)
         <CardContent className="flex flex-wrap items-center gap-3">
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <p className="font-semibold tabular-nums">
-              {REVIEW_TAB_LABELS[tab]}: {available} асуулт
+              {REVIEW_TAB_LABELS[tab]}: {available} {mn.units.questions}
             </p>
             <p className="text-sm text-muted-foreground">{SOURCE_LABELS[tab].description}</p>
           </div>
@@ -60,7 +61,7 @@ export default async function ReviewPage({ searchParams }: PageProps<"/review">)
             available={available}
             className="h-11 w-full sm:h-9 sm:w-auto"
           >
-            Дадлага эхлэх
+            {mn.actions.startPractice}
           </StartPracticeButton>
         </CardContent>
       </Card>

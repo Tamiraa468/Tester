@@ -2,13 +2,14 @@ import Link from "next/link";
 import { cn } from "cn";
 import { Badge } from "@/components/ui/badge";
 import { AttemptSource } from "@/generated/prisma/enums";
+import { mn } from "@/lib/i18n/mn";
 import { REVIEW_TABS, type ReviewCounts, type ReviewTab } from "@/server/queries/progress";
 
 /** Short tab wording; the longer description of each source stays in SOURCE_LABELS. */
 export const REVIEW_TAB_LABELS: Record<ReviewTab, string> = {
-  [AttemptSource.DUE]: "Давтах",
-  [AttemptSource.WRONG]: "Алдсан",
-  [AttemptSource.BOOKMARKED]: "Тэмдэглэсэн",
+  [AttemptSource.DUE]: mn.review.due,
+  [AttemptSource.WRONG]: mn.review.wrong,
+  [AttemptSource.BOOKMARKED]: mn.review.bookmarked,
 };
 
 const SLUGS: Record<ReviewTab, string> = {
@@ -32,7 +33,7 @@ export function reviewHref(tab: ReviewTab, page = 1): string {
  */
 export function ReviewTabs({ current, counts }: { current: ReviewTab; counts: ReviewCounts }) {
   return (
-    <nav aria-label="Давтах жагсаалтууд">
+    <nav aria-label={`${mn.nav.review} жагсаалтууд`}>
       <ul className="flex flex-wrap gap-1 rounded-lg bg-muted p-1">
         {REVIEW_TABS.map((tab) => {
           const active = tab === current;
@@ -42,7 +43,7 @@ export function ReviewTabs({ current, counts }: { current: ReviewTab; counts: Re
                 href={reviewHref(tab)}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex h-10 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition-colors sm:h-8",
+                  "flex h-11 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition-colors sm:h-8",
                   active
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground",
@@ -51,7 +52,7 @@ export function ReviewTabs({ current, counts }: { current: ReviewTab; counts: Re
                 {REVIEW_TAB_LABELS[tab]}
                 <Badge variant={active ? "secondary" : "outline"} className="tabular-nums">
                   {counts[tab]}
-                  <span className="sr-only"> асуулт</span>
+                  <span className="sr-only"> {mn.units.questions}</span>
                 </Badge>
               </Link>
             </li>

@@ -14,11 +14,12 @@ import { StartPracticeButton } from "@/components/practice/start-practice-button
 import { AttemptMode, AttemptSource } from "@/generated/prisma/enums";
 import { activeDayCount, totalAnswers } from "@/lib/activity";
 import { requireUser } from "@/lib/auth";
+import { mn, vocab } from "@/lib/i18n/mn";
 import { finalizeMyExpiredExam } from "@/server/actions/exam";
 import { getOpenExam } from "@/server/queries/exams";
 import { getDashboardData, isNewUser } from "@/server/queries/progress";
 
-export const metadata: Metadata = { title: "Хяналтын самбар" };
+export const metadata: Metadata = { title: mn.nav.dashboard };
 
 export default async function DashboardPage() {
   // Layouts don't re-run on client navigation, so each page checks auth itself.
@@ -36,7 +37,7 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">Хяналтын самбар</h1>
+        <h1 className="text-2xl font-semibold">{mn.nav.dashboard}</h1>
         <p className="text-sm text-muted-foreground">Ахиц дэвшил, давтах асуултууд.</p>
       </div>
 
@@ -44,24 +45,24 @@ export default async function DashboardPage() {
 
       <section aria-labelledby="kpi-heading" className="flex flex-col gap-3">
         <h2 id="kpi-heading" className="sr-only">
-          Ерөнхий үзүүлэлт
+          {vocab.bank}
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <KpiCard label="Нийт асуулт" value={String(bank.total)} />
+          <KpiCard label={`Нийт ${mn.units.questions}`} value={String(bank.total)} />
           <KpiCard
             label="Үзсэн"
             value={String(bank.seen)}
             hint={bank.total > 0 ? `${Math.round((bank.seen / bank.total) * 100)}%` : undefined}
           />
           <KpiCard
-            label="Цээжилсэн"
+            label={vocab.mastered}
             value={String(bank.mastered)}
             hint={bank.total > 0 ? `${Math.round((bank.mastered / bank.total) * 100)}%` : undefined}
           />
           <KpiCard
             label="Нарийвчлал"
             value={formatPercent(bank.accuracy)}
-            hint={bank.answered > 0 ? `${bank.correct}/${bank.answered} хариулт` : undefined}
+            hint={bank.answered > 0 ? `${bank.correct}/${bank.answered} ${mn.units.answers}` : undefined}
           />
         </div>
       </section>
@@ -89,7 +90,7 @@ export default async function DashboardPage() {
             <CardContent className="flex flex-wrap items-center gap-3">
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <p className="text-lg font-semibold tabular-nums">
-                  Өнөөдөр давтах: {dueCount} асуулт
+                  Өнөөдөр {vocab.review.toLowerCase()}: {dueCount} {mn.units.questions}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Давтлагын хуваарийн дагуу хугацаа нь болсон асуултууд.
@@ -101,7 +102,7 @@ export default async function DashboardPage() {
                 size="lg"
                 className="h-11 w-full text-base sm:w-auto"
               >
-                Давтаж эхлэх
+                {mn.actions.startReview}
               </StartPracticeButton>
             </CardContent>
           </Card>
@@ -127,13 +128,13 @@ export default async function DashboardPage() {
               aria-hidden="true"
             />
             {activity.streak > 0
-              ? `${activity.streak} хоног дараалан`
+              ? `${activity.streak} ${mn.units.days} дараалан`
               : "Дараалсан өдөр алга"}
           </p>
         </div>
         <ActivityChart
           days={activity.days}
-          summary={`Сүүлийн 30 хоногт ${answers} хариулт, ${activeDays} идэвхтэй өдөр.`}
+          summary={`Сүүлийн 30 хоногт ${answers} ${mn.units.answers}, ${activeDays} идэвхтэй өдөр.`}
         />
       </section>
 
@@ -142,7 +143,7 @@ export default async function DashboardPage() {
           Сүүлийн оролдлогууд
         </h2>
         <AttemptHistory
-          emptyText="Та одоогоор дадлага, шалгалт дуусгаагүй байна."
+          emptyText={mn.states.emptyAttempts}
           rows={recentAttempts.map((attempt) => ({
             id: attempt.id,
             href:

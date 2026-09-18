@@ -8,11 +8,12 @@ import { PracticeSetup } from "@/components/practice/practice-setup";
 import { SOURCE_LABELS } from "@/components/practice/source-labels";
 import { requireUser } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
+import { mn } from "@/lib/i18n/mn";
 import { finalizeMyExpiredExam } from "@/server/actions/exam";
 import { listUnfinishedPracticeAttempts } from "@/server/queries/attempts";
 import { countsBySource, listSubjects } from "@/server/queries/questions";
 
-export const metadata: Metadata = { title: "Дадлага" };
+export const metadata: Metadata = { title: mn.nav.practice };
 
 export default async function PracticePage({ searchParams }: PageProps<"/practice">) {
   await auth.protect();
@@ -34,14 +35,14 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Дадлага</h1>
+      <h1 className="text-2xl font-semibold">{mn.nav.practice}</h1>
 
       <PracticeSetup subjects={subjects} subjectId={subjectId} counts={counts} />
 
       {unfinished.length > 0 && (
         <section aria-labelledby="unfinished-heading" className="flex flex-col gap-3">
           <h2 id="unfinished-heading" className="text-lg font-semibold">
-            Дуусаагүй дадлага
+            Дуусаагүй {mn.nav.practice.toLowerCase()}
           </h2>
           <ul className="flex flex-col gap-2">
             {unfinished.map((attempt) => (
@@ -50,7 +51,7 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
                   <CardContent className="flex flex-wrap items-center gap-3">
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <p className="font-medium">
-                        {attempt.source ? SOURCE_LABELS[attempt.source].label : "Дадлага"}
+                        {attempt.source ? SOURCE_LABELS[attempt.source].label : mn.nav.practice}
                         {attempt.subjectName && (
                           <span className="font-normal text-muted-foreground">
                             {" "}
@@ -59,7 +60,7 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
                         )}
                       </p>
                       <p className="text-xs text-muted-foreground tabular-nums">
-                        Хариулсан {attempt.answeredCount} / {attempt.totalCount} ·{" "}
+                        {mn.quiz.answered} {attempt.answeredCount} / {attempt.totalCount} ·{" "}
                         <time dateTime={attempt.startedAt.toISOString()}>
                           {formatDateTime(attempt.startedAt)}
                         </time>
@@ -72,7 +73,7 @@ export default async function PracticePage({ searchParams }: PageProps<"/practic
                         "h-11 w-full sm:h-8 sm:w-auto",
                       )}
                     >
-                      Үргэлжлүүлэх
+                      {mn.actions.continue}
                     </Link>
                   </CardContent>
                 </Card>

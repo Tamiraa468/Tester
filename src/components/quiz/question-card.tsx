@@ -9,6 +9,7 @@ import { BookmarkButton } from "@/components/quiz/bookmark-button";
 import { FlagButton } from "@/components/quiz/flag-button";
 import { KeyboardHints } from "@/components/quiz/keyboard-hints";
 import { OptionList, type AnswerOption } from "@/components/quiz/option-list";
+import { mn } from "@/lib/i18n/mn";
 import { shortcutFor, type ShortcutKeyEvent } from "@/lib/quiz/keyboard";
 
 export type QuestionCardProps = {
@@ -104,6 +105,12 @@ export function QuestionCard({
   // until the attempt is submitted (which is the only time correctOptionId is sent).
   const readOnly = revealed;
   const wasCorrect = revealed && selectedOptionId === correctOptionId;
+  // Spelled out in words, never signalled by the green or red alone.
+  const verdict = wasCorrect
+    ? mn.quiz.answeredCorrectly
+    : selectedOptionId
+      ? mn.quiz.answeredWrongly
+      : mn.quiz.notAnswered;
 
   // Enter is deliberately not a shortcut here: it acts on whatever has focus (an option
   // answers, the "next" button advances), so it is never a surprise.
@@ -158,7 +165,7 @@ export function QuestionCard({
       <CardHeader>
         <CardTitle className="flex flex-wrap items-center gap-2 text-muted-foreground">
           <span className="tabular-nums">
-            Асуулт {position} / {total}
+            {mn.units.question} {position} / {total}
           </span>
           {subject && <Badge variant="outline">{subject}</Badge>}
         </CardTitle>
@@ -176,7 +183,7 @@ export function QuestionCard({
       </CardHeader>
 
       <CardContent className="flex flex-col gap-4">
-        <p id={textId} className="font-serif text-lg leading-relaxed break-words">
+        <p id={textId} className="reading measure font-serif break-words">
           {text}
         </p>
 
@@ -184,7 +191,7 @@ export function QuestionCard({
           <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted/40">
             <Image
               src={imageUrl}
-              alt="Асуултын зураг"
+              alt={mn.quiz.questionImage}
               fill
               sizes="(min-width: 768px) 672px, 100vw"
               unoptimized={isRemoteUrl(imageUrl)}
@@ -204,14 +211,19 @@ export function QuestionCard({
           focusOnMount={focusOnMount}
         />
 
+        {/* Always mounted, so the verdict announces as a *change* of text once the user
+            answers. A live region that appears already populated is announced
+            inconsistently across screen readers. Only the verdict is spoken: the
+            explanation is there to be read, not recited over the top of it. */}
+        <p aria-live="polite" aria-atomic="true" className="sr-only">
+          {revealed ? verdict : ""}
+        </p>
+
         {revealed && (
-          <div
-            // Practice reveals the result the moment the user answers, so it has to be
-            // announced rather than silently appear below the options.
-            role="status"
-            className="flex flex-col gap-2 rounded-lg border bg-muted/40 p-3"
-          >
+          <div className="flex flex-col gap-2 rounded-lg border bg-muted/40 p-3">
             <p
+              // aria-hidden: the live region above already says this.
+              aria-hidden="true"
               className={
                 wasCorrect
                   ? "flex items-center gap-1.5 text-sm font-medium text-success"
@@ -223,16 +235,14 @@ export function QuestionCard({
               ) : (
                 <XIcon className="size-4" aria-hidden="true" />
               )}
-              {wasCorrect
-                ? "Зөв хариуллаа"
-                : selectedOptionId
-                  ? "Буруу хариуллаа"
-                  : "Хариулаагүй"}
+              {verdict}
             </p>
             {explanation && (
               <div className="flex flex-col gap-1">
-                <p className="text-xs font-medium text-muted-foreground">Тайлбар</p>
-                <p className="font-serif text-sm leading-relaxed">{explanation}</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  {mn.quiz.explanation}
+                </p>
+                <p className="reading-sm measure font-serif">{explanation}</p>
               </div>
             )}
           </div>

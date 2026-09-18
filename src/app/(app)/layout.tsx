@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { AppNav } from "@/components/app-nav";
+import { AuthProvider } from "@/components/auth-provider";
 import { isAdmin, requireUser } from "@/lib/auth";
 
 export default async function AppLayout({
@@ -13,11 +14,11 @@ export default async function AppLayout({
   const admin = await isAdmin();
 
   return (
-    <>
+    <AuthProvider>
       <AppNav isAdmin={admin} />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+      <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
         {children}
       </main>
-    </>
+    </AuthProvider>
   );
 }

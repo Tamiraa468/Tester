@@ -53,6 +53,7 @@
 }
 
 :root {
+  color-scheme: light;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -64,17 +65,25 @@
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  /* Secondary text lands on tinted surfaces too — bg-muted, and the primary/5 and
+     primary/10 fills of a selected card — so it is set for the worst of those, where
+     it still clears 4.5:1 (6.0:1 on plain white). */
+  --muted-foreground: oklch(0.5 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --success: oklch(0.53 0.13 152);
+  /* Dark enough to stay readable as text on their own 10-20% tint, which is how the
+     quiz draws correct / wrong / flagged. Ratios against white: destructive 6.7:1
+     (5.6:1 on destructive/10), success 6.1:1 (5.3:1), warning 6.1:1 (5.3:1). */
+  --destructive: oklch(0.5 0.2 27.325);
+  --success: oklch(0.48 0.13 152);
   --success-foreground: oklch(0.985 0 0);
-  --warning: oklch(0.59 0.14 72);
+  --warning: oklch(0.5 0.13 72);
   --warning-foreground: oklch(0.985 0 0);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* The focus ring is drawn as a solid `border-ring` plus a `ring-ring/50` halo; the
+     solid edge carries WCAG 1.4.11 non-text contrast, here 4.9:1 against white. */
+  --ring: oklch(0.55 0 0);
   /* One hue (indigo), from the strongest step down. --chart-1 is the series colour;
      the dark block below picks its own steps rather than flipping these. */
   --chart-1: oklch(0.511 0.23 277);
@@ -94,6 +103,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -115,7 +125,8 @@
   --warning-foreground: oklch(0.205 0 0);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  /* 5.4:1 against the dark background, the mirror of the light ring. */
+  --ring: oklch(0.62 0 0);
   /* Selected for the dark surface, not an inversion of the light steps: --chart-1
      stays the series colour and keeps >= 3:1 against the background. */
   --chart-1: oklch(0.68 0.158 276.9);
@@ -143,4 +154,31 @@
   html {
     @apply font-sans;
   }
+}
+
+/**
+ * Long Mongolian text. Cyrillic sets wider than Latin and the sentences are long, so
+ * the reading sizes start at 17px on a phone rather than the 16px interface size, and
+ * the leading is 1.6 rather than the tighter default.
+ */
+@utility reading {
+  font-size: 1.0625rem; /* 17px */
+  line-height: 1.6;
+  @variant sm {
+    font-size: 1.125rem; /* 18px */
+  }
+}
+
+/** Secondary long text — answer options, explanations — one step down from `reading`. */
+@utility reading-sm {
+  font-size: 1.0625rem; /* 17px */
+  line-height: 1.6;
+  @variant sm {
+    font-size: 1rem; /* 16px */
+  }
+}
+
+/** About 70 characters: past that the eye loses the start of the next line. */
+@utility measure {
+  max-width: 70ch;
 }

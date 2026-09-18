@@ -3,6 +3,7 @@
 import { BookmarkIcon } from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
+import { mn } from "@/lib/i18n/mn";
 
 /**
  * Bookmarks a question (Bookmark in the schema): practice mode and the /review page.
@@ -27,10 +28,11 @@ export function BookmarkButton({
       aria-pressed={bookmarked}
       onClick={onToggle}
       disabled={disabled}
-      className={className}
+      // 44px on touch, back to the compact card action from sm up.
+      className={cn("h-11 px-3 sm:h-7 sm:px-2.5", className)}
     >
       <BookmarkIcon className={cn(bookmarked && "fill-current")} aria-hidden="true" />
-      {bookmarked ? "Тэмдэглэсэн" : "Тэмдэглэх"}
+      {bookmarked ? mn.quiz.bookmarked : mn.quiz.bookmark}
     </Button>
   );
 }

@@ -9,6 +9,7 @@ import {
   isRepeatedActivation,
   moveFocusIndex,
 } from "@/lib/quiz/keyboard";
+import { mn } from "@/lib/i18n/mn";
 import { letterFor } from "@/lib/quiz/letters";
 
 export type AnswerOption = {
@@ -160,18 +161,18 @@ export function OptionList({
             </span>
 
             <span className="flex min-w-0 flex-col gap-1">
-              <span className="text-base leading-snug break-words sm:text-sm">{option.text}</span>
+              <span className="reading-sm break-words">{option.text}</span>
               {/* Never colour alone: the state is also spelled out, and read out with the option. */}
               {isCorrect && (
                 <span className="flex items-center gap-1 text-xs font-medium text-success">
                   <CheckIcon className="size-3.5" aria-hidden="true" />
-                  {isSelected ? "Таны хариулт — зөв" : "Зөв хариулт"}
+                  {isSelected ? mn.quiz.yourAnswerCorrect : mn.quiz.correctAnswer}
                 </span>
               )}
               {isWrongChoice && (
                 <span className="flex items-center gap-1 text-xs font-medium text-destructive">
                   <XIcon className="size-3.5" aria-hidden="true" />
-                  Таны хариулт — буруу
+                  {mn.quiz.yourAnswerWrong}
                 </span>
               )}
             </span>

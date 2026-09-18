@@ -4,11 +4,12 @@ import { auth } from "@clerk/nextjs/server";
 import { PracticePlayer } from "@/components/practice/practice-player";
 import { AttemptMode, AttemptStatus } from "@/generated/prisma/enums";
 import { requireUser } from "@/lib/auth";
+import { mn } from "@/lib/i18n/mn";
 import { resolvePlayerIndex } from "@/lib/quiz/attempt";
 import { attemptIdSchema } from "@/server/actions/practice.schemas";
 import { getAttemptForPlayer } from "@/server/queries/attempts";
 
-export const metadata: Metadata = { title: "Дадлага" };
+export const metadata: Metadata = { title: mn.nav.practice };
 
 export default async function PracticeAttemptPage({
   params,

@@ -3,6 +3,7 @@
 import { useId, useState } from "react";
 import { cn } from "cn";
 import { Switch } from "@/components/ui/switch";
+import { mn } from "@/lib/i18n/mn";
 
 export type NavigatorItem = {
   position: number;
@@ -37,7 +38,7 @@ export function QuestionNavigator({
     <section aria-labelledby={headingId} className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id={headingId} className="text-sm font-medium">
-          Асуултууд
+          {mn.quiz.questionList}
         </h2>
         {filterable && (
           <label htmlFor={filterId} className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -47,21 +48,21 @@ export function QuestionNavigator({
               checked={onlyUnanswered}
               onCheckedChange={(checked) => setOnlyUnanswered(checked)}
             />
-            Зөвхөн хариулаагүй
+            {mn.quiz.onlyUnanswered}
           </label>
         )}
       </div>
 
       {shown.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Бүх асуултад хариулсан байна.</p>
+        <p className="text-sm text-muted-foreground">{mn.quiz.allAnswered}</p>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-2">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-2">
           {shown.map((item) => {
             const isCurrent = item.position === currentPosition;
             // Spelled out for screen readers: colour and the corner dot are not enough.
             const state = [
-              item.answered ? "хариулсан" : "хариулаагүй",
-              item.flagged ? "эргэж харах" : null,
+              item.answered ? mn.quiz.answered.toLowerCase() : mn.quiz.unanswered.toLowerCase(),
+              item.flagged ? mn.quiz.flag.toLowerCase() : null,
             ].filter(Boolean);
 
             return (
@@ -70,7 +71,7 @@ export function QuestionNavigator({
                 type="button"
                 onClick={() => onJump?.(item.position)}
                 aria-current={isCurrent ? "true" : undefined}
-                aria-label={`Асуулт ${item.position}, ${state.join(", ")}`}
+                aria-label={`${mn.units.question} ${item.position}, ${state.join(", ")}`}
                 className={cn(
                   "relative flex aspect-square items-center justify-center rounded-md border text-sm tabular-nums transition-colors outline-none",
                   "hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
@@ -97,21 +98,21 @@ export function QuestionNavigator({
       <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
         <li className="flex items-center gap-1.5">
           <span aria-hidden="true" className={cn(swatchBase, "border-primary/30 bg-primary/10")} />
-          Хариулсан
+          {mn.quiz.answered}
         </li>
         <li className="flex items-center gap-1.5">
           <span aria-hidden="true" className={cn(swatchBase, "border-border")} />
-          Хариулаагүй
+          {mn.quiz.unanswered}
         </li>
         <li className="flex items-center gap-1.5">
           <span aria-hidden="true" className={cn(swatchBase, "relative border-warning")}>
             <span className="absolute -top-0.5 -right-0.5 size-1.5 rounded-full bg-warning" />
           </span>
-          Эргэж харах
+          {mn.quiz.flag}
         </li>
         <li className="flex items-center gap-1.5">
           <span aria-hidden="true" className={cn(swatchBase, "border-ring ring-3 ring-ring/50")} />
-          Одоогийн асуулт
+          {mn.quiz.currentQuestion}
         </li>
       </ul>
     </section>

@@ -13,6 +13,7 @@ import { QuestionNavigator } from "@/components/quiz/question-navigator";
 import { FinishExamDialog } from "@/components/exam/finish-exam-dialog";
 import { useAnswerSaver, type SaveStatus } from "@/components/exam/use-answer-saver";
 import { useExamCountdown } from "@/components/exam/use-exam-countdown";
+import { mn } from "@/lib/i18n/mn";
 import { getExamClock, submitExam, toggleReviewMark } from "@/server/actions/exam";
 import type { ExamPlayerProps } from "@/server/queries/exam-player";
 
@@ -26,7 +27,7 @@ function SaveIndicator({ status, onRetry }: { status: SaveStatus; onRetry: () =>
         className="flex items-center gap-1 text-xs font-medium text-destructive underline-offset-2 hover:underline"
       >
         <CloudOffIcon className="size-3.5" aria-hidden="true" />
-        Хадгалагдаагүй · дахин оролдох
+        {mn.quiz.unsaved} · {mn.actions.retry.toLowerCase()}
       </button>
     );
   }
@@ -37,7 +38,7 @@ function SaveIndicator({ status, onRetry }: { status: SaveStatus; onRetry: () =>
       ) : (
         <CircleCheckIcon className="size-3.5 text-success" aria-hidden="true" />
       )}
-      {status === "saving" ? "Хадгалж байна…" : "Хадгалсан"}
+      {status === "saving" ? mn.quiz.saving : mn.quiz.saved}
     </span>
   );
 }
@@ -162,7 +163,7 @@ export function ExamPlayer({
     setFlagOverrides((current) => ({ ...current, [item.position]: !previous }));
     startFlagging(async () => {
       const result = await toggleReviewMark(item.id).catch(() => ({
-        error: "Сүлжээний алдаа гарлаа.",
+        error: mn.errors.network,
         closed: undefined,
       }));
       if ("error" in result) {
@@ -181,6 +182,8 @@ export function ExamPlayer({
 
   return (
     <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[minmax(0,1fr)_17rem]">
+      {/* One h1 per document; the visible preset name in the sticky bar is a caption. */}
+      <h1 className="sr-only">{presetName ?? mn.nav.exam}</h1>
       <div className="flex min-w-0 flex-col gap-4">
         <div className="sticky top-14 z-20 -mx-4 flex flex-col gap-2 border-b bg-background/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-xl sm:border sm:px-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -192,10 +195,11 @@ export function ExamPlayer({
               type="button"
               variant="outline"
               size="sm"
+              className="h-11 px-3 sm:h-7 sm:px-2.5"
               disabled={submitting}
               onClick={() => setFinishOpen(true)}
             >
-              Дуусгах
+              {mn.actions.finish}
             </Button>
           </div>
           <AttemptHeader
@@ -236,16 +240,16 @@ export function ExamPlayer({
             type="button"
             variant="ghost"
             size="sm"
-            className="self-start"
+            className="h-11 self-start px-3 sm:h-7 sm:px-2.5"
             onClick={() => choose(null)}
           >
             <XIcon aria-hidden="true" />
-            Хариултаа арилгах
+            {mn.actions.clearAnswer}
           </Button>
         )}
 
         {/* Under the thumb on phones; the navigator opens as a sheet from here. */}
-        <div className="sticky bottom-0 z-10 -mx-4 flex items-center gap-2 border-t bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
+        <div className="sticky bottom-0 z-10 -mx-4 flex min-h-16 items-center gap-2 border-t bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:static sm:mx-0 sm:min-h-0 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
           <Button
             type="button"
             variant="outline"
@@ -254,7 +258,7 @@ export function ExamPlayer({
             onClick={() => go(item.position - 1)}
           >
             <ChevronLeftIcon aria-hidden="true" />
-            Өмнөх
+            {mn.actions.previous}
           </Button>
 
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -263,11 +267,11 @@ export function ExamPlayer({
                 <Button type="button" variant="secondary" className="h-11 flex-1 tabular-nums lg:hidden" />
               }
             >
-              Асуултууд {answeredCount}/{total}
+              {mn.quiz.questionList} {answeredCount}/{total}
             </SheetTrigger>
             <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto">
               <SheetHeader>
-                <SheetTitle>Асуултууд</SheetTitle>
+                <SheetTitle>{mn.quiz.questionList}</SheetTitle>
               </SheetHeader>
               <div className="px-4 pb-6">{navigator}</div>
             </SheetContent>
@@ -280,7 +284,7 @@ export function ExamPlayer({
               disabled={submitting}
               onClick={() => setFinishOpen(true)}
             >
-              Шалгалт дуусгах
+              {mn.actions.finishExam}
             </Button>
           ) : (
             <Button
@@ -289,7 +293,7 @@ export function ExamPlayer({
               disabled={navigating}
               onClick={() => go(item.position + 1)}
             >
-              Дараах
+              {mn.actions.next}
               <ChevronRightIcon aria-hidden="true" />
             </Button>
           )}

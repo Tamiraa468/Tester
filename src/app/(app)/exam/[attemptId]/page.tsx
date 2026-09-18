@@ -5,13 +5,14 @@ import { ExamPlayer } from "@/components/exam/exam-player";
 import { AttemptStatus } from "@/generated/prisma/enums";
 import { requireUser } from "@/lib/auth";
 import { now } from "@/lib/clock";
+import { mn } from "@/lib/i18n/mn";
 import { resolvePlayerIndex } from "@/lib/quiz/attempt";
 import { finalizeIfExpired } from "@/server/actions/exam";
 import { examAttemptIdSchema } from "@/server/actions/exam.schemas";
 import { getAttemptForPlayer } from "@/server/queries/attempts";
 import { toExamPlayerProps } from "@/server/queries/exam-player";
 
-export const metadata: Metadata = { title: "Шалгалт" };
+export const metadata: Metadata = { title: mn.nav.exam };
 
 export default async function ExamAttemptPage({
   params,

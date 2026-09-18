@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { vocab } from "@/lib/i18n/mn";
 import type { QuestionNeedingReview } from "@/server/queries/admin/overview";
 
 /**
@@ -29,7 +30,7 @@ export function ReviewTable({ rows }: { rows: readonly QuestionNeedingReview[] }
       <TableHeader>
         <TableRow>
           <TableHead>Асуулт</TableHead>
-          <TableHead className="text-right">Алдсан</TableHead>
+          <TableHead className="text-right">{vocab.wrong}</TableHead>
           <TableHead>Хамгийн их сонгосон буруу хувилбар</TableHead>
           <TableHead>Одоогийн зөв хариулт</TableHead>
         </TableRow>

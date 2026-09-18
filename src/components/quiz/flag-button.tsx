@@ -3,6 +3,7 @@
 import { FlagIcon } from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
+import { mn } from "@/lib/i18n/mn";
 
 /**
  * Marks an exam question to come back to (AttemptItem.flagged). The label stays the
@@ -27,10 +28,11 @@ export function FlagButton({
       aria-pressed={flagged}
       onClick={onToggle}
       disabled={disabled}
-      className={cn(flagged && "text-warning", className)}
+      // 44px on touch, back to the compact card action from sm up.
+      className={cn("h-11 px-3 sm:h-7 sm:px-2.5", flagged && "text-warning", className)}
     >
       <FlagIcon className={cn(flagged && "fill-current")} aria-hidden="true" />
-      Эргэж харах
+      {mn.quiz.flag}
     </Button>
   );
 }

@@ -38,7 +38,7 @@ export function RemoveBookmarkButton({ questionId }: { questionId: string }) {
       size="sm"
       onClick={remove}
       disabled={pending || removed}
-      className="h-9 shrink-0"
+      className="h-11 shrink-0 sm:h-9"
     >
       <BookmarkXIcon aria-hidden="true" />
       Хасах

@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
+import { FileTextIcon } from "lucide-react";
 import { AttemptHistory } from "@/components/exam/attempt-history";
 import { OpenExamBanner } from "@/components/exam/open-exam-banner";
 import { PresetCard } from "@/components/exam/preset-card";
+import { EmptyState } from "@/components/states/empty-state";
 import { AttemptMode } from "@/generated/prisma/enums";
 import { requireUser } from "@/lib/auth";
+import { mn } from "@/lib/i18n/mn";
 import { finalizeMyExpiredExam } from "@/server/actions/exam";
 import { getOpenExam, listExamHistory, listPresetCards } from "@/server/queries/exams";
 
-export const metadata: Metadata = { title: "Шалгалт" };
+export const metadata: Metadata = { title: mn.nav.exam };
 
 export default async function ExamPage() {
   await auth.protect();
@@ -25,7 +28,7 @@ export default async function ExamPage() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">Шалгалт</h1>
+        <h1 className="text-2xl font-semibold">{mn.nav.exam}</h1>
         <p className="text-sm text-muted-foreground">
           Жинхэнэ шалгалтын нөхцөлөөр: хугацаатай, дуустал хариу харагдахгүй.
         </p>
@@ -38,7 +41,7 @@ export default async function ExamPage() {
           Шалгалтын төрөл
         </h2>
         {presets.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Одоогоор шалгалтын төрөл алга.</p>
+          <EmptyState icon={FileTextIcon} title={mn.states.emptyPresets} />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {presets.map((preset) => (
@@ -53,7 +56,7 @@ export default async function ExamPage() {
           Өмнөх шалгалтууд
         </h2>
         <AttemptHistory
-          emptyText="Та одоогоор шалгалт өгөөгүй байна."
+          emptyText={mn.states.emptyExams}
           rows={history.map((exam) => ({
             id: exam.id,
             href: `/exam/${exam.id}/result`,

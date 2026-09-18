@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { CircleCheckIcon } from "lucide-react";
 import { cn } from "cn";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/states/empty-state";
 import { RemoveBookmarkButton } from "@/components/review/remove-bookmark-button";
 import { reviewHref } from "@/components/review/review-tabs";
 import { AttemptSource } from "@/generated/prisma/enums";
@@ -15,7 +17,7 @@ import type { ReviewPage } from "@/server/queries/progress";
  */
 export function ReviewQuestionList({ page, emptyText }: { page: ReviewPage; emptyText: string }) {
   if (page.items.length === 0) {
-    return <p className="text-sm text-muted-foreground">{emptyText}</p>;
+    return <EmptyState icon={CircleCheckIcon} title={emptyText} />;
   }
 
   return (
@@ -26,7 +28,7 @@ export function ReviewQuestionList({ page, emptyText }: { page: ReviewPage; empt
             <Card size="sm">
               <CardContent className="flex flex-wrap items-start gap-3">
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <p className="font-serif text-sm">{question.text}</p>
+                  <p className="reading-sm measure font-serif">{question.text}</p>
                   <p className="text-xs text-muted-foreground tabular-nums">
                     {question.subjectName} · №{question.code}
                     {question.wrongCount !== null && question.wrongCount > 0 && (

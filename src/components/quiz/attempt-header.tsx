@@ -3,6 +3,7 @@
 import { ClockIcon } from "lucide-react";
 import { cn } from "cn";
 import { Progress } from "@/components/ui/progress";
+import { mn } from "@/lib/i18n/mn";
 import { formatClock } from "@/lib/quiz/time";
 
 /** Under a minute left, the clock turns into a warning. */
@@ -27,10 +28,10 @@ export function AttemptHeader({
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm">
         <span className="font-medium tabular-nums">
-          Асуулт {position} / {total}
+          {mn.units.question} {position} / {total}
         </span>
         <span className="text-muted-foreground tabular-nums">
-          Хариулсан {answeredCount} / {total}
+          {mn.quiz.answered} {answeredCount} / {total}
         </span>
         {remainingSeconds !== undefined && (
           <span
@@ -41,12 +42,12 @@ export function AttemptHeader({
             )}
           >
             <ClockIcon className="size-4" aria-hidden="true" />
-            <span className="sr-only">Үлдсэн хугацаа</span>
+            <span className="sr-only">{mn.quiz.remainingTime}</span>
             {formatClock(remainingSeconds)}
           </span>
         )}
       </div>
-      <Progress value={percent} aria-label="Хариулсан асуултын явц" />
+      <Progress value={percent} aria-label={mn.quiz.progressLabel} />
     </div>
   );
 }

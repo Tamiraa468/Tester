@@ -20,6 +20,7 @@ import { ExamResultList } from "@/components/exam/exam-result-list";
 import { RetryWrongButton } from "@/components/practice/retry-wrong-button";
 import { AttemptStatus } from "@/generated/prisma/enums";
 import { requireUser } from "@/lib/auth";
+import { mn } from "@/lib/i18n/mn";
 import { formatDateTime, formatDuration } from "@/lib/format";
 import { subjectBreakdown } from "@/lib/quiz/exam-result";
 import { timeUsedSeconds } from "@/lib/quiz/exam-time";
@@ -60,7 +61,7 @@ export default async function ExamResultPage({
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">Шалгалтын дүн</h1>
         <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          <span>{attempt.presetName ?? "Шалгалт"}</span>·
+          <span>{attempt.presetName ?? mn.nav.exam}</span>·
           <time dateTime={attempt.startedAt.toISOString()}>{formatDateTime(attempt.startedAt)}</time>
           {attempt.status === AttemptStatus.EXPIRED ? (
             <Badge variant="outline" className="border-warning text-warning">

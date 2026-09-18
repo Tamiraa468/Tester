@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { ChevronRightIcon } from "lucide-react";
+import { ChevronRightIcon, HistoryIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SOURCE_LABELS } from "@/components/practice/source-labels";
+import { EmptyState } from "@/components/states/empty-state";
 import { AttemptMode, AttemptStatus, type AttemptSource } from "@/generated/prisma/enums";
 import { formatDateTime } from "@/lib/format";
+import { mn } from "@/lib/i18n/mn";
 
 export type AttemptHistoryRow = {
   id: string;
@@ -22,8 +24,8 @@ export type AttemptHistoryRow = {
 
 /** An exam is named after its preset, a practice after the source it was drawn from. */
 export function attemptTitle(row: Pick<AttemptHistoryRow, "mode" | "source" | "presetName">): string {
-  if (row.mode === AttemptMode.EXAM) return row.presetName ?? "Шалгалт";
-  return row.source ? SOURCE_LABELS[row.source].label : "Дадлага";
+  if (row.mode === AttemptMode.EXAM) return row.presetName ?? mn.nav.exam;
+  return row.source ? SOURCE_LABELS[row.source].label : mn.nav.practice;
 }
 
 /** A user's finished attempts, newest first, each linking to its result. */
@@ -35,7 +37,7 @@ export function AttemptHistory({
   emptyText: string;
 }) {
   if (rows.length === 0) {
-    return <p className="text-sm text-muted-foreground">{emptyText}</p>;
+    return <EmptyState icon={HistoryIcon} title={emptyText} />;
   }
 
   // Only a mixed list (the dashboard) has to say which mode a row is; on /exam or a
@@ -57,7 +59,7 @@ export function AttemptHistory({
                   <span className="truncate">{attemptTitle(row)}</span>
                   {mixedModes && (
                     <Badge variant="outline">
-                      {row.mode === AttemptMode.EXAM ? "Шалгалт" : "Дадлага"}
+                      {row.mode === AttemptMode.EXAM ? mn.nav.exam : mn.nav.practice}
                     </Badge>
                   )}
                   {row.status === AttemptStatus.EXPIRED ? (
@@ -80,7 +82,7 @@ export function AttemptHistory({
                 <span className="block text-xs text-muted-foreground">{percent}%</span>
               </span>
               <ChevronRightIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-              <span className="sr-only">Дүн харах</span>
+              <span className="sr-only">{mn.actions.showResult}</span>
             </Link>
           </li>
         );

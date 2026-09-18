@@ -5,13 +5,14 @@ import { RotateCcwIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { AttemptSource } from "@/generated/prisma/enums";
+import { mn } from "@/lib/i18n/mn";
 import { createPracticeAttempt } from "@/server/actions/practice";
 
 /** Starts a CUSTOM practice from this attempt's wrong answers (chosen on the server). */
 export function RetryWrongButton({
   attemptId,
   count,
-  label = "Алдсануудаа дахин давтах",
+  label = mn.actions.retryWrong,
 }: {
   attemptId: string;
   count: number;
@@ -37,7 +38,7 @@ export function RetryWrongButton({
       }
     >
       <RotateCcwIcon aria-hidden="true" />
-      {pending ? "Бэлтгэж байна…" : `${label} (${count})`}
+      {pending ? mn.actions.preparing : `${label} (${count})`}
     </Button>
   );
 }

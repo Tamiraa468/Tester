@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SOURCE_LABELS } from "@/components/practice/source-labels";
+import { mn } from "@/lib/i18n/mn";
 import { createPracticeAttempt } from "@/server/actions/practice";
 import {
   COUNTED_SOURCES,
@@ -145,7 +146,7 @@ export function PracticeSetup({
                 </span>
                 <Badge variant="secondary" className="tabular-nums">
                   {counts[value]}
-                  <span className="sr-only"> асуулт</span>
+                  <span className="sr-only"> {mn.units.questions}</span>
                 </Badge>
               </label>
             ))}
@@ -192,7 +193,7 @@ export function PracticeSetup({
               aria-describedby={error ? errorId : undefined}
             >
               <PlayIcon aria-hidden="true" />
-              {starting ? "Бэлтгэж байна…" : "Дадлага эхлэх"}
+              {starting ? mn.actions.preparing : mn.actions.startPractice}
             </Button>
           </div>
         </form>

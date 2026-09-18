@@ -4,6 +4,7 @@ import { cn } from "cn";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDateTime } from "@/lib/format";
+import { mn } from "@/lib/i18n/mn";
 
 export type OpenExam = {
   id: string;
@@ -25,7 +26,8 @@ export function OpenExamBanner({ exam }: { exam: OpenExam }) {
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <p className="font-semibold">Үргэлжилж буй шалгалт</p>
           <p className="text-sm text-muted-foreground tabular-nums">
-            {exam.presetName ?? "Шалгалт"} · Хариулсан {exam.answeredCount} / {exam.totalCount}
+            {exam.presetName ?? mn.nav.exam} · {mn.quiz.answered} {exam.answeredCount} /{" "}
+            {exam.totalCount}
           </p>
           {exam.deadline && (
             <p className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -38,7 +40,7 @@ export function OpenExamBanner({ exam }: { exam: OpenExam }) {
           href={`/exam/${exam.id}`}
           className={cn(buttonVariants(), "h-11 w-full sm:h-9 sm:w-auto")}
         >
-          Үргэлжлүүлэх
+          {mn.actions.continue}
         </Link>
       </CardContent>
     </Card>

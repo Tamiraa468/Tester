@@ -1,12 +1,11 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingStatus } from "@/components/states/page-loading";
 
 /** Mirrors the dashboard's layout: KPI row, subject bars, chart, recent attempts. */
 export default function DashboardLoading() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8" aria-busy="true">
-      <span className="sr-only" role="status">
-        Ачааллаж байна…
-      </span>
+      <LoadingStatus />
 
       <div className="flex flex-col gap-2">
         <Skeleton className="h-8 w-56" />

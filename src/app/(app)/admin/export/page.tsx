@@ -5,6 +5,7 @@ import { cn } from "cn";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireAdmin } from "@/lib/auth";
+import { vocab } from "@/lib/i18n/mn";
 import { countQuestionsForExport } from "@/server/queries/admin/export";
 
 export const metadata: Metadata = { title: "Экспорт" };
@@ -27,7 +28,7 @@ export default async function AdminExportPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Асуултын сан</CardTitle>
+          <CardTitle className="text-lg">{vocab.bank}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <p className="text-sm text-muted-foreground tabular-nums">
